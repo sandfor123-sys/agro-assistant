@@ -20,8 +20,15 @@ const mockPool = {
 
 // Create PostgreSQL connection pool
 const pool = isBuildMode ? mockPool : new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL + '?sslmode=require&connect_timeout=10',
+    ssl: process.env.NODE_ENV === 'production' ? { 
+        rejectUnauthorized: false
+    } : false,
+    // Forcer IPv4
+    family: 4,
+    // Timeout settings
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
 });
 
 export default pool;

@@ -94,10 +94,10 @@ export default function ParcelsPage() {
                     const progress = Math.min(100, Math.round((daysSincePlanting / p.cycle_vie_jours) * 100));
 
                     return (
-                        <Link 
+                        <div 
                             key={p.id_parcelle}
-                            href={`/dashboard/parcels/${p.id_parcelle}`}
-                            className="bg-surface rounded-2xl border border-border overflow-hidden hover:border-primary/50 transition-all group shadow-sm block"
+                            onClick={() => router.push(`/dashboard/parcels/${p.id_parcelle}`)}
+                            className="bg-surface rounded-2xl border border-border overflow-hidden hover:border-primary/50 transition-all group shadow-sm block cursor-pointer"
                         >
                             <div className="h-3 w-full" style={{ backgroundColor: p.couleur || 'var(--color-primary)' }}></div>
                             <div className="p-6">
@@ -159,7 +159,7 @@ export default function ParcelsPage() {
                                     </button>
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     );
                 })}
 

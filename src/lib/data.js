@@ -38,27 +38,144 @@ async function getFinancialTip() {
 async function getWeeklyTasks(userId = 1) {
     const tasks = [];
     try {
-        // Mock data for build
+        // Récupérer les parcelles de l'utilisateur avec leurs infos
+        const [parcelles] = await pool.query(`
+            SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
+            FROM parcelle p 
+            JOIN culture c ON p.id_culture = c.id_culture 
+            WHERE p.id_utilisateur = ? AND p.statut = 'en_cours'
+        `, [userId]);
+
+        const now = new Date();
+        
+        for (const parcelle of parcelles) {
+            const plantingDate = new Date(parcelle.date_semis);
+            const daysSincePlanting = Math.floor((now - plantingDate) / (1000 * 60 * 60 * 24));
+            const progress = Math.min(100, Math.round((daysSincePlanting / parcelle.cycle_vie_jours) * 100));
+            
+            // Générer des tâches selon le stade de croissance
+            if (progress < 10) {
+                // Phase de germination (0-10%)
+                tasks.push({
+                    id: `germination-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Vérifier la germination des semences",
+                    priority: "high",
+                    icon: "🌱",
+                    personnel: false
+                });
+                tasks.push({
+                    id: `arrosage-jeune-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Arrosage léger des jeunes plants",
+                    priority: "urgent",
+                    icon: "💧",
+                    personnel: false
+                });
+            } else if (progress < 30) {
+                // Phase de croissance initiale (10-30%)
+                tasks.push({
+                    id: `desherbage-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Désherbage autour des jeunes plants",
+                    priority: "high",
+                    icon: "🌿",
+                    personnel: false
+                });
+                tasks.push({
+                    id: `fertilisation-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Première fertilisation légère",
+                    priority: "medium",
+                    icon: "🌾",
+                    personnel: false
+                });
+            } else if (progress < 60) {
+                // Phase de croissance active (30-60%)
+                tasks.push({
+                    id: `surveillance-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Surveiller les signes de maladies",
+                    priority: "medium",
+                    icon: "🔍",
+                    personnel: false
+                });
+                tasks.push({
+                    id: `arrosage-regulier-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Maintenir l'arrosage régulier",
+                    priority: "medium",
+                    icon: "💧",
+                    personnel: false
+                });
+            } else if (progress < 90) {
+                // Phase de maturation (60-90%)
+                tasks.push({
+                    id: `protection-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Appliquer traitements pré-récolte si nécessaire",
+                    priority: "high",
+                    icon: "🛡️",
+                    personnel: false
+                });
+                tasks.push({
+                    id: `preparation-recolte-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Préparer le matériel de récolte",
+                    priority: "low",
+                    icon: "🚜",
+                    personnel: false
+                });
+            } else {
+                // Pré-récolte (90-100%)
+                tasks.push({
+                    id: `evaluation-recolte-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Évaluer la maturité pour la récolte",
+                    priority: "urgent",
+                    icon: "📊",
+                    personnel: false
+                });
+            }
+            
+            // Tâches de maintenance générales
+            if (Math.random() > 0.7) {
+                tasks.push({
+                    id: `nettoyage-${parcelle.id_parcelle}`,
+                    parcelle: parcelle.nom_parcelle,
+                    task: "Nettoyer les contours de la parcelle",
+                    priority: "low",
+                    icon: "🧹",
+                    personnel: true
+                });
+            }
+        }
+        
+        // Ajouter des tâches administratives
         tasks.push({
-            parcelle: "Demo",
-            task: "Tâche de démonstration",
+            id: "inventaire",
+            parcelle: "Administration",
+            task: "Mettre à jour l'inventaire des intrants",
             priority: "medium",
-            icon: "🌱",
-            id: "demo-task",
+            icon: "📦",
             personnel: false
         });
+        
+        // Limiter à 8 tâches maximum pour ne pas surcharger
+        return tasks.slice(0, 8);
+        
     } catch (error) {
-        console.error("Error generating tasks:", error);
-        tasks.push({
+        console.error("Error generating dynamic tasks:", error);
+        // En cas d'erreur, retourner une tâche par défaut
+        return [{
             parcelle: "Système",
-            task: "Vérifier la connexion à la base de données",
-            priority: "low",
+            task: "Vérifier l'état des cultures",
+            priority: "medium",
             icon: "⚠️",
-            id: "error",
+            id: "error-task",
             personnel: false
-        });
+        }];
     }
-    return tasks;
 }
 
 async function syncGroundedAlerts(userId = 1) {

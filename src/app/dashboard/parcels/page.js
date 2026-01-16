@@ -174,8 +174,8 @@ export default function ParcelsPage() {
                         <div className="bg-surface-alt w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-text-tertiary">
                             <Sprout size={32} />
                         </div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">Aucune parcelle</h3>
-                        <p className="text-text-secondary mb-6">Commencez par ajouter votre première parcelle de terrain.</p>
+                        <h3 className="text-xl font-bold text-foreground mb-2">Aucune parcelle pour le moment</h3>
+                        <p className="text-text-secondary mb-6">Commencez par ajouter votre première parcelle pour suivre vos cultures.</p>
                         <Link 
                             href="/dashboard/parcels/add"
                             className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-primary/20 flex items-center gap-2"

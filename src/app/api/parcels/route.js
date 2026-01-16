@@ -14,40 +14,11 @@ export async function GET(request) {
             ORDER BY p.date_semis DESC
         `, [userId]);
 
-        // Si aucune parcelle trouvée, retourner des données mock pour éviter les erreurs
-        if (rows.length === 0) {
-            const mockParcels = [
-                {
-                    id_parcelle: 1,
-                    nom_parcelle: 'Parcelle Démonstration',
-                    superficie: 2.5,
-                    nom_culture: 'Maïs',
-                    couleur: '#fbbf24',
-                    cycle_vie_jours: 120,
-                    date_semis: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    statut: 'en_cours'
-                }
-            ];
-            return NextResponse.json({ parcels: mockParcels });
-        }
-
         return NextResponse.json({ parcels: rows });
     } catch (error) {
         console.error('GET /api/parcels error:', error);
-        // En cas d'erreur, retourner des données mock
-        const mockParcels = [
-            {
-                id_parcelle: 1,
-                nom_parcelle: 'Parcelle Démonstration',
-                superficie: 2.5,
-                nom_culture: 'Maïs',
-                couleur: '#fbbf24',
-                cycle_vie_jours: 120,
-                date_semis: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                statut: 'en_cours'
-            }
-        ];
-        return NextResponse.json({ parcels: mockParcels });
+        // En cas d'erreur de BDD, retourner un tableau vide plutot que des faux
+        return NextResponse.json({ parcels: [] });
     }
 }
 

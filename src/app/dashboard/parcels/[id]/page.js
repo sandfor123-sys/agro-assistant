@@ -8,7 +8,14 @@ import Link from 'next/link';
 async function getParcel(id, userId = 1) {
     try {
         const res = await fetch(`/api/parcels/${id}?userId=${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch parcel');
+        
+        if (!res.ok) {
+            if (res.status === 404) {
+                return null; // Parcelle non trouvée
+            }
+            throw new Error(`Failed to fetch parcel: ${res.status} ${res.statusText}`);
+        }
+        
         return await res.json();
     } catch (error) {
         console.error('Error fetching parcel:', error);
@@ -50,7 +57,8 @@ export default function ParcelDetailPage({ params }) {
                     statut: parcelData.statut
                 });
             } catch (err) {
-                setError('Erreur de chargement');
+                console.error('Load parcel error:', err);
+                setError('Erreur lors du chargement de la parcelle');
             } finally {
                 setLoading(false);
             }

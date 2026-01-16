@@ -9,7 +9,7 @@ const mockPool = {
         console.log('Mock query (build mode):', text, params);
         // Return empty results for all queries during build
         if (text.includes('SELECT COUNT(*)')) {
-            return [{ rows: [{ count: 0 }] }];
+            return { rows: [{ count: 0 }] };
         }
         if (text.includes('SELECT')) {
             return { rows: [] };

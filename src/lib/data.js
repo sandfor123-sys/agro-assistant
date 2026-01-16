@@ -39,12 +39,14 @@ async function getWeeklyTasks(userId = 1) {
     const tasks = [];
     try {
         // Récupérer les parcelles de l'utilisateur avec leurs infos
-        const [parcelles] = await pool.query(`
+        const parcellesResult = await pool.query(`
             SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
             FROM parcelle p 
             JOIN culture c ON p.id_culture = c.id_culture 
-            WHERE p.id_utilisateur = ? AND p.statut = 'en_cours'
+            WHERE p.id_utilisateur = $1 AND p.statut = 'en_cours'
         `, [userId]);
+
+        const parcelles = parcellesResult.rows;
 
         const now = new Date();
         
@@ -200,13 +202,13 @@ export async function getDashboardData(userId = 1) {
             financialTip,
             weeklyTasks
         ] = await Promise.all([
-            pool.query('SELECT COUNT(*) as count FROM parcelle WHERE id_utilisateur = ?', [userId]),
-            pool.query('SELECT COUNT(*) as count FROM alerte WHERE id_utilisateur = ? AND lu = 0', [userId]),
+            pool.query('SELECT COUNT(*) as count FROM parcelle WHERE id_utilisateur = $1', [userId]),
+            pool.query('SELECT COUNT(*) as count FROM alerte WHERE id_utilisateur = $1 AND lu = 0', [userId]),
             pool.query(`
         SELECT p.*, c.nom_culture, c.couleur 
         FROM parcelle p 
         JOIN culture c ON p.id_culture = c.id_culture 
-        WHERE p.id_utilisateur = ? 
+        WHERE p.id_utilisateur = $1 
         ORDER BY p.date_semis DESC 
         LIMIT 5
       `, [userId]),
@@ -217,8 +219,8 @@ export async function getDashboardData(userId = 1) {
         ]);
 
         const stats = {
-            parcelles: nbParcellesResult[0]?.count || 0,
-            alertes: nbAlertesResult[0]?.count || 0,
+            parcelles: nbParcellesResult.rows[0]?.count || 0,
+            alertes: nbAlertesResult.rows[0]?.count || 0,
             revenus: '2.4M', // Hardcoded as per PHP original
             successRate: '92%' // Hardcoded as per PHP original
         };
@@ -226,12 +228,12 @@ export async function getDashboardData(userId = 1) {
         let user = { prenom: 'Jean', nom: 'Kouassi' };
 
         try {
-            const [userResult] = await pool.query('SELECT prenom, nom FROM utilisateur WHERE id_utilisateur = ?', [userId]);
-            if (userResult.length > 0) {
-                user = userResult[0];
+            const userResult = await pool.query('SELECT prenom, nom FROM utilisateur WHERE id_utilisateur = $1', [userId]);
+            if (userResult.rows.length > 0) {
+                user = userResult.rows[0];
             }
-        } catch (e) {
-            console.warn("User fetch failed, utilizing fallback");
+        } catch (error) {
+            console.error('User fetch failed, utilizing fallback');
         }
 
         const greeting = await getGreeting();
@@ -244,7 +246,7 @@ export async function getDashboardData(userId = 1) {
             action,
             financialTip,
             weeklyTasks,
-            recentParcelles: recentParcelles[0]
+            recentParcelles: recentParcelles.rows
         };
 
     } catch (error) {
@@ -254,13 +256,13 @@ export async function getDashboardData(userId = 1) {
 }
 export async function getAlerts(userId = 1) {
     try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
             SELECT a.* 
             FROM alerte a
-            WHERE a.id_utilisateur = ?
+            WHERE a.id_utilisateur = $1
             ORDER BY a.date_creation DESC
         `, [userId]);
-        return rows;
+        return result.rows;
     } catch (error) {
         console.error('getAlerts Error:', error);
         return [];
@@ -269,14 +271,14 @@ export async function getAlerts(userId = 1) {
 
 export async function getTrackingData(userId = 1) {
     try {
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
             SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
             FROM parcelle p
             JOIN culture c ON p.id_culture = c.id_culture
-            WHERE p.id_utilisateur = ?
+            WHERE p.id_utilisateur = $1
             ORDER BY p.date_semis DESC
         `, [userId]);
-        return rows;
+        return result.rows;
     } catch (error) {
         console.error('getTrackingData Error:', error);
         throw new Error('Failed to fetch tracking data');

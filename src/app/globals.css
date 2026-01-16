@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+:root {
+  /* Default Theme (Light/Warm - 'AgriWarm') */
+  --color-background: #fffbeb;
+  /* Amber-50 (Warm white) */
+  --color-foreground: #451a03;
+  /* Amber-950 (Deep Brown) */
+
+  --color-surface: #ffffff;
+  /* White */
+  --color-surface-alt: #fef3c7;
+  /* Amber-100 */
+
+  --color-border: #fcd34d;
+  /* Amber-300 */
+
+  --color-primary: #d97706;
+  /* Amber-600 */
+  --color-primary-light: #fbbf24;
+  /* Amber-400 */
+  --color-primary-dark: #b45309;
+  /* Amber-700 */
+
+  --color-text-primary: #451a03;
+  /* Amber-950 */
+  --color-text-secondary: #78350f;
+  /* Amber-900 */
+  --color-text-tertiary: #92400e;
+  /* Amber-800 */
+
+  --image-gradient-subtle: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  --image-gradient-primary: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+[data-theme='dark'] {
+  /* Futuristic Dark Theme (Midnight) */
+  --color-background: #020617;
+  /* Slate-950 */
+  --color-foreground: #f8fafc;
+  /* Slate-50 */
+
+  --color-surface: #0f172a;
+  /* Slate-900 */
+  --color-surface-alt: #1e293b;
+  /* Slate-800 */
+
+  --color-border: #1e293b;
+  /* Slate-800 */
+
+  --color-primary: #8b5cf6;
+  /* Violet-500 */
+  --color-primary-light: #a78bfa;
+  /* Violet-400 */
+  --color-primary-dark: #7c3aed;
+  /* Violet-600 */
+
+  --color-text-primary: #f8fafc;
+  /* Slate-50 */
+  --color-text-secondary: #94a3b8;
+  /* Slate-400 */
+  --color-text-tertiary: #64748b;
+  /* Slate-500 */
+
+  --image-gradient-subtle: radial-gradient(circle at top center, #1e1b4b 0%, #020617 100%);
+  --image-gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+}
+
+@theme {
+  /* Semantic Colors referencing CSS variables */
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+
+  --color-surface: var(--color-surface);
+  --color-surface-alt: var(--color-surface-alt);
+
+  --color-border: var(--color-border);
+
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark);
+
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary: var(--color-text-tertiary);
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Fonts */
+  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary selection:text-white bg-no-repeat min-h-screen transition-colors duration-300;
+    font-family: var(--font-sans);
+    background-image: var(--image-gradient-subtle);
+  }
+}
+
+@layer components {
+
+  /* Updated for Theme Compatibility */
+  .glass-panel {
+    @apply bg-surface/80 backdrop-blur-md border border-border/50 shadow-xl;
+  }
+
+  .glass-card {
+    @apply bg-surface/60 backdrop-blur border border-border/50 hover:bg-surface/80 transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-alt hover:bg-surface text-foreground font-medium py-2 px-4 rounded-xl border border-border hover:border-border/80 transition-all;
+  }
+
+  /* Utilities */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--image-gradient-primary);
+  }
+}

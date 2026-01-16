@@ -8,10 +8,35 @@ import { useState } from 'react';
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        prenom: '',
+        nom: '',
+        email: '',
+        password: ''
+    });
+
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        
+        // Sauvegarder les infos utilisateur dans localStorage
+        const userInfo = {
+            prenom: formData.prenom,
+            nom: formData.nom,
+            email: formData.email,
+            fullName: `${formData.prenom} ${formData.nom}`
+        };
+        
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        localStorage.setItem('isLoggedIn', 'true');
+        
         // Simulate API call
         setTimeout(() => {
             router.push('/dashboard');
@@ -37,6 +62,9 @@ export default function RegisterPage() {
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" size={18} />
                                 <input
                                     type="text"
+                                    name="prenom"
+                                    value={formData.prenom}
+                                    onChange={handleInputChange}
                                     placeholder="Jean"
                                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
                                     required
@@ -47,6 +75,9 @@ export default function RegisterPage() {
                             <label className="block text-sm font-medium text-text-primary mb-1.5">Nom</label>
                             <input
                                 type="text"
+                                name="nom"
+                                value={formData.nom}
+                                onChange={handleInputChange}
                                 placeholder="Kouassi"
                                 className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface-alt focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
                                 required
@@ -60,6 +91,9 @@ export default function RegisterPage() {
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" size={18} />
                             <input
                                 type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
                                 placeholder="votre@email.com"
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
                                 required
@@ -73,7 +107,10 @@ export default function RegisterPage() {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" size={18} />
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                placeholder="•••••••"
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
                                 required
                             />

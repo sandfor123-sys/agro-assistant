@@ -1,10 +1,31 @@
  'use client';
 
  import { useEffect, useMemo, useState } from 'react';
- import { CheckCircle2, Circle, AlertCircle, X, Calendar, List } from 'lucide-react';
+ import { CheckCircle2, Circle, AlertCircle, X, Calendar, List, CheckSquare, Sparkles } from 'lucide-react';
 
 export default function WeeklyTasks({ tasks }) {
-    if (!tasks || tasks.length === 0) return null;
+    if (!tasks || tasks.length === 0) {
+        return (
+            <div className="bg-surface rounded-2xl p-8 text-center border border-border">
+                <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <CheckSquare size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">Aucune tâche pour le moment</h3>
+                <p className="text-text-secondary mb-6 max-w-sm mx-auto">
+                    Vos tâches agricoles apparaîtront ici une fois que vous aurez créé vos parcelles.
+                </p>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-surface-alt rounded-xl text-left">
+                        <Sparkles className="text-primary" size={20} />
+                        <div className="flex-1">
+                            <div className="font-medium text-foreground text-sm">Conseil du jour</div>
+                            <div className="text-xs text-text-secondary">Commencez par créer une parcelle pour générer vos premières tâches</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const [completed, setCompleted] = useState({});
     const [open, setOpen] = useState(false);

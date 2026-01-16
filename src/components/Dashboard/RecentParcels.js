@@ -1,13 +1,23 @@
 import Link from 'next/link';
-import { Calendar, MapPin, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight, Plus, Sprout } from 'lucide-react';
 
 export default function RecentParcels({ parcels }) {
     if (!parcels || parcels.length === 0) {
         return (
             <div className="bg-surface rounded-2xl p-8 text-center border border-border">
-                <p className="text-text-secondary">Aucune parcelle trouvée.</p>
-                <Link href="/create-parcel" className="mt-4 inline-block text-primary font-semibold hover:underline">
-                    Créer une parcelle
+                <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Sprout size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">Commencez votre première culture</h3>
+                <p className="text-text-secondary mb-6 max-w-sm mx-auto">
+                    Créez votre première parcelle pour commencer à suivre vos cultures et optimiser vos rendements.
+                </p>
+                <Link 
+                    href="/dashboard/parcels/add" 
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-all font-semibold"
+                >
+                    <Plus size={18} />
+                    Créer ma première parcelle
                 </Link>
             </div>
         );
@@ -55,7 +65,7 @@ export default function RecentParcels({ parcels }) {
                             </div>
                             <div className="flex items-center">
                                 <MapPin size={14} className="mr-1.5" />
-                                {parcelle.localisation}
+                                {parcelle.localisation || 'Non spécifiée'}
                             </div>
                         </div>
                     </Link>

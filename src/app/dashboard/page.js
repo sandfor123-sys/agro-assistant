@@ -4,6 +4,7 @@ import WeatherCard from '@/components/Dashboard/WeatherCard';
 import RecentParcels from '@/components/Dashboard/RecentParcels';
 import WeeklyTasks from '@/components/Dashboard/WeeklyTasks';
 import TaskScrollButton from '@/components/TaskScrollButton';
+import DashboardHeader from '@/components/Dashboard/DashboardHeader';
 import { Sprout, Bell, Activity, DollarSign, ExternalLink, Bot } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,24 +19,13 @@ export default async function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Header Section */}
-        <header className="flex justify-between items-center relative">
-          <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">
-              {greeting}, {user.prenom} !
-            </h1>
-            <p className="text-text-secondary mt-1">
-              Bienvenue sur votre tableau de bord agricole intelligent
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Bouton Lien vers les tâches */}
-            <TaskScrollButton />
-            {/* Simple Avatar Placeholder */}
-            <div className="h-10 w-10 rounded-full bg-surface-alt border border-white/10 text-primary flex items-center justify-center font-bold text-lg">
-              {user.prenom[0]}{user.nom[0]}
-            </div>
-          </div>
-        </header>
+        <DashboardHeader 
+          greeting={greeting} 
+          stats={stats} 
+          weather={weather} 
+          action={action} 
+          financialTip={financialTip} 
+        />
 
         {/* Hero / Weather Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

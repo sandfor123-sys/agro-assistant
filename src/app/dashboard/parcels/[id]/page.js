@@ -1,58 +1,153 @@
-import pool from '@/lib/db';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sprout, Calendar, MapPin, Save, ArrowLeft, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 async function getParcel(id, userId = 1) {
     try {
-        const [rows] = await pool.query(`
-            SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
-            FROM parcelle p
-            JOIN culture c ON p.id_culture = c.id_culture
-            WHERE p.id_parcelle = ? AND p.id_utilisateur = ?
-        `, [id, userId]);
-        return rows[0];
+        const res = await fetch(`/api/parcels/${id}?userId=${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch parcel');
+        return await res.json();
     } catch (error) {
         console.error('Error fetching parcel:', error);
         return null;
     }
 }
 
-export default async function ParcelDetailPage({ params }) {
-    try {
-        const { id } = await params;
-        const parcel = await getParcel(id);
+export default function ParcelDetailPage({ params }) {
+    const router = useRouter();
+    const [parcel, setParcel] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+        nom_parcelle: '',
+        superficie: '',
+        date_semis: '',
+        statut: 'en_cours'
+    });
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-        if (!parcel) {
-            return (
-                <div className="p-8 text-center">
-                    <h1 className="text-2xl font-bold text-foreground mb-4">Parcelle non trouvée</h1>
-                    <Link href="/dashboard/parcels" className="text-primary hover:underline flex items-center justify-center gap-2">
-                        <ArrowLeft size={16} /> Retour à la liste
-                    </Link>
-                </div>
-            );
+    useEffect(() => {
+        async function loadParcel() {
+            try {
+                const resolvedParams = await params;
+                const { id } = resolvedParams;
+                const parcelData = await getParcel(id);
+                
+                if (!parcelData) {
+                    setError('Parcelle non trouvée');
+                    return;
+                }
+                
+                setParcel(parcelData);
+                setFormData({
+                    nom_parcelle: parcelData.nom_parcelle,
+                    superficie: parcelData.superficie,
+                    date_semis: parcelData.date_semis,
+                    statut: parcelData.statut
+                });
+            } catch (err) {
+                setError('Erreur de chargement');
+            } finally {
+                setLoading(false);
+            }
         }
+        loadParcel();
+    }, [params]);
 
-    async function updateParcel(formData) {
-        'use server';
-        const nom = formData.get('nom');
-        const superficie = formData.get('superficie');
-        const dateSemis = formData.get('date_semis');
-        const statut = formData.get('statut');
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
 
-        await pool.query(
-            'UPDATE parcelle SET nom_parcelle = ?, superficie = ?, date_semis = ?, statut = ? WHERE id_parcelle = ?',
-            [nom, superficie, dateSemis, statut, id]
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        setIsUpdating(true);
+        
+        try {
+            const resolvedParams = await params;
+            const { id } = resolvedParams;
+            
+            const res = await fetch(`/api/parcels/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...formData,
+                    superficie: Number(formData.superficie),
+                    userId: 1
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                setError(err?.error || 'Erreur lors de la mise à jour');
+                return;
+            }
+
+            router.push('/dashboard/parcels');
+        } catch (e) {
+            setError('Erreur lors de la mise à jour');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!parcel) return;
+        
+        const ok = confirm(`Supprimer la parcelle "${parcel.nom_parcelle}" ?\nCette action est irréversible.`);
+        if (!ok) return;
+
+        setIsDeleting(true);
+        
+        try {
+            const resolvedParams = await params;
+            const { id } = resolvedParams;
+            
+            const res = await fetch('/api/parcels', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_parcelle: id, userId: 1 })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                setError(err?.error || 'Erreur lors de la suppression');
+                return;
+            }
+
+            router.push('/dashboard/parcels');
+        } catch (e) {
+            setError('Erreur lors de la suppression');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="p-4 md:p-8 max-w-5xl mx-auto">
+                <div className="text-center text-text-secondary">Chargement...</div>
+            </div>
         );
-
-        redirect('/dashboard/parcels');
     }
 
-    async function deleteParcel() {
-        'use server';
-        await pool.query('DELETE FROM parcelle WHERE id_parcelle = ?', [id]);
-        redirect('/dashboard/parcels');
+    if (error || !parcel) {
+        return (
+            <div className="p-8 text-center">
+                <h1 className="text-2xl font-bold text-foreground mb-4">
+                    {error || 'Parcelle non trouvée'}
+                </h1>
+                <Link href="/dashboard/parcels" className="text-primary hover:underline flex items-center justify-center gap-2">
+                    <ArrowLeft size={16} /> Retour à la liste
+                </Link>
+            </div>
+        );
     }
 
     const plantingDate = new Date(parcel.date_semis);
@@ -76,12 +171,6 @@ export default async function ParcelDetailPage({ params }) {
                         <h1 className="text-3xl font-display font-bold text-foreground leading-tight">{parcel.nom_parcelle}</h1>
                         <p className="text-text-secondary">{parcel.nom_culture} • {parcel.superficie} Hectares</p>
                     </div>
-                </div>
-                <div className="flex gap-3 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none px-6 py-3 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 font-semibold">
-                        <Trash2 size={18} />
-                        Supprimer
-                    </button>
                 </div>
             </header>
 
@@ -120,18 +209,6 @@ export default async function ParcelDetailPage({ params }) {
                             </div>
                         </div>
                     </div>
-
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-6">
-                        <div className="flex items-start gap-3 mb-4">
-                            <div className="p-2 bg-amber-500 text-white rounded-lg">
-                                <AlertTriangle size={18} />
-                            </div>
-                            <h4 className="font-bold text-amber-500 leading-tight pt-1">Ajuster la réalité</h4>
-                        </div>
-                        <p className="text-xs text-amber-600/80 leading-relaxed">
-                            Si la progression affichée ne correspond pas à ce que vous observez sur le terrain, vous pouvez corriger la **date de semis** ici.
-                        </p>
-                    </div>
                 </div>
 
                 {/* Edit Form */}
@@ -139,14 +216,15 @@ export default async function ParcelDetailPage({ params }) {
                     <div className="bg-surface border border-border rounded-3xl p-8 shadow-sm">
                         <h3 className="text-xl font-bold text-foreground mb-8">Informations Générales</h3>
 
-                        <form action={updateParcel} className="space-y-6">
+                        <form onSubmit={handleUpdate} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-text-tertiary uppercase ml-1">Nom de la Parcelle</label>
                                     <input
-                                        name="nom"
+                                        name="nom_parcelle"
                                         type="text"
-                                        defaultValue={parcel.nom_parcelle}
+                                        value={formData.nom_parcelle}
+                                        onChange={handleInputChange}
                                         className="w-full bg-surface-alt border border-border rounded-2xl px-5 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
                                     />
                                 </div>
@@ -156,7 +234,8 @@ export default async function ParcelDetailPage({ params }) {
                                         name="superficie"
                                         type="number"
                                         step="0.01"
-                                        defaultValue={parcel.superficie}
+                                        value={formData.superficie}
+                                        onChange={handleInputChange}
                                         className="w-full bg-surface-alt border border-border rounded-2xl px-5 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
                                     />
                                 </div>
@@ -167,7 +246,8 @@ export default async function ParcelDetailPage({ params }) {
                                         <input
                                             name="date_semis"
                                             type="date"
-                                            defaultValue={new Date(parcel.date_semis).toISOString().split('T')[0]}
+                                            value={formData.date_semis}
+                                            onChange={handleInputChange}
                                             className="w-full bg-surface-alt border border-border rounded-2xl pl-12 pr-5 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
                                         />
                                     </div>
@@ -176,7 +256,8 @@ export default async function ParcelDetailPage({ params }) {
                                     <label className="text-xs font-bold text-text-tertiary uppercase ml-1">Statut</label>
                                     <select
                                         name="statut"
-                                        defaultValue={parcel.statut}
+                                        value={formData.statut}
+                                        onChange={handleInputChange}
                                         className="w-full bg-surface-alt border border-border rounded-2xl px-5 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all appearance-none"
                                     >
                                         <option value="en_cours">En cours</option>
@@ -186,45 +267,35 @@ export default async function ParcelDetailPage({ params }) {
                                 </div>
                             </div>
 
-                            </form>
-                        
-                        <div className="pt-8 border-t border-border mt-8 flex justify-between gap-4">
-                            <form action={deleteParcel}>
-                                <button 
-                                    type="submit" 
-                                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20 flex items-center gap-2"
-                                    onClick={(e) => {
-                                        if (!confirm(`Supprimer la parcelle "${parcel.nom_parcelle}" ?\nCette action est irréversible.`)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
+                            {error && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl p-4">
+                                    {error}
+                                </div>
+                            )}
+
+                            <div className="pt-8 border-t border-border mt-8 flex justify-between gap-4">
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={isDeleting}
+                                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 disabled:opacity-50"
                                 >
                                     <Trash2 size={18} />
-                                    Supprimer
+                                    {isDeleting ? 'Suppression...' : 'Supprimer'}
                                 </button>
-                            </form>
-                            <form action={updateParcel}>
-                                <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-primary/20 flex items-center gap-3">
+                                <button 
+                                    type="submit" 
+                                    disabled={isUpdating}
+                                    className="bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-primary/20 flex items-center gap-3 disabled:opacity-50"
+                                >
                                     <Save size={20} />
-                                    Enregistrer les modifications
+                                    {isUpdating ? 'Enregistrement...' : 'Enregistrer les modifications'}
                                 </button>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     );
-    } catch (error) {
-        console.error('Error in ParcelDetailPage:', error);
-        return (
-            <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold text-foreground mb-4">Erreur de chargement</h1>
-                <p className="text-text-secondary mb-4">Impossible de charger les détails de cette parcelle.</p>
-                <Link href="/dashboard/parcels" className="text-primary hover:underline flex items-center justify-center gap-2">
-                    <ArrowLeft size={16} /> Retour à la liste
-                </Link>
-            </div>
-        );
-    }
 }

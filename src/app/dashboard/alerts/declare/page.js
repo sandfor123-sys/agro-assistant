@@ -1,5 +1,6 @@
 import pool from '@/lib/db';
 import DeclareIncidentClient from '@/components/DeclareIncidentClient';
+import { Suspense } from 'react';
 
 async function getParcels(userId = 1) {
     try {
@@ -14,7 +15,18 @@ async function getParcels(userId = 1) {
 export default async function DeclareIncidentPage() {
     try {
         const parcels = await getParcels();
-        return <DeclareIncidentClient parcels={parcels} />;
+        return (
+            <Suspense fallback={
+                <div className="p-4 md:p-8 max-w-3xl mx-auto">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-surface-alt rounded-lg mb-4"></div>
+                        <div className="h-32 bg-surface-alt rounded-lg"></div>
+                    </div>
+                </div>
+            }>
+                <DeclareIncidentClient parcels={parcels} />
+            </Suspense>
+        );
     } catch (error) {
         console.error('Error in DeclareIncidentPage:', error);
         return (

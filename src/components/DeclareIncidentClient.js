@@ -258,10 +258,6 @@ export default function DeclareIncidentClient({ parcels }) {
                             className="w-full bg-surface-alt border border-border rounded-2xl px-6 py-4 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-text-tertiary"
                         />
                     </div>
-                        required
-                        className="w-full bg-surface-alt border border-border rounded-2xl px-6 py-4 text-foreground focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-text-tertiary"
-                    />
-                </div>
 
                     <label className="flex items-center gap-3 text-sm font-semibold text-foreground">
                         <input

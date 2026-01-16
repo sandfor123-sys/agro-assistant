@@ -3,7 +3,8 @@ import StatCard from '@/components/Dashboard/StatCard';
 import WeatherCard from '@/components/Dashboard/WeatherCard';
 import RecentParcels from '@/components/Dashboard/RecentParcels';
 import WeeklyTasks from '@/components/Dashboard/WeeklyTasks';
-import { Sprout, Bell, Activity, DollarSign, ExternalLink, Bot, List } from 'lucide-react';
+import TaskScrollButton from '@/components/TaskScrollButton';
+import { Sprout, Bell, Activity, DollarSign, ExternalLink, Bot } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -28,13 +29,7 @@ export default async function Dashboard() {
           </div>
           <div className="flex items-center gap-4">
             {/* Bouton Lien vers les tâches */}
-            <a
-              href="#weekly-tasks-section"
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all font-semibold flex items-center gap-2"
-            >
-              <List size={16} />
-              Voir les tâches
-            </a>
+            <TaskScrollButton />
             {/* Simple Avatar Placeholder */}
             <div className="h-10 w-10 rounded-full bg-surface-alt border border-white/10 text-primary flex items-center justify-center font-bold text-lg">
               {user.prenom[0]}{user.nom[0]}

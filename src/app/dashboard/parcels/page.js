@@ -103,7 +103,13 @@ export default function ParcelsPage() {
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{p.nom_parcelle}</h3>
+                                        <Link
+                                            href={`/dashboard/parcels/${p.id_parcelle}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors hover:underline"
+                                        >
+                                            {p.nom_parcelle}
+                                        </Link>
                                         <div className="flex items-center gap-2 text-text-tertiary text-sm">
                                             <Sprout size={14} />
                                             <span>{p.nom_culture}</span>

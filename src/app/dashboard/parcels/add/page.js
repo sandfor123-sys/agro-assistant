@@ -44,13 +44,18 @@ export default function AddParcelPage() {
 
             if (!res.ok) {
                 const err = await res.json().catch(() => null);
-                setError(err?.error || 'Erreur lors de la création');
+                if (err.error) {
+                    setError(err.error);
+                } else {
+                    setError('Erreur lors de la création. Veuillez réessayer.');
+                }
                 return;
             }
 
             router.push('/dashboard/parcels');
         } catch (e) {
-            setError('Erreur lors de la création');
+            console.error('Creation error:', e);
+            setError('Erreur réseau. Vérifiez votre connexion et réessayez.');
         } finally {
             setLoading(false);
         }

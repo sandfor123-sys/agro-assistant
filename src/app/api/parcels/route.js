@@ -26,21 +26,33 @@ export async function POST(request) {
         const { nom_parcelle, superficie, id_culture, date_semis, statut, userId = 1 } = await request.json();
 
         if (!nom_parcelle || !superficie || !id_culture || !date_semis) {
-            return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 });
+            return NextResponse.json({ error: 'Champs requis manquants: nom_parcelle, superficie, id_culture, date_semis' }, { status: 400 });
+        }
+
+        // Validation des données
+        if (isNaN(Number(superficie)) || Number(superficie) <= 0) {
+            return NextResponse.json({ error: 'La superficie doit être un nombre positif' }, { status: 400 });
+        }
+
+        if (isNaN(Number(id_culture)) || Number(id_culture) <= 0) {
+            return NextResponse.json({ error: 'L\'ID de culture doit être un nombre positif' }, { status: 400 });
         }
 
         const [result] = await pool.query(`
             INSERT INTO parcelle (nom_parcelle, superficie, id_culture, date_semis, statut, id_utilisateur)
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [nom_parcelle, superficie, id_culture, date_semis, statut || 'active', userId]);
+        `, [nom_parcelle, Number(superficie), Number(id_culture), date_semis, statut || 'en_cours', userId]);
 
         return NextResponse.json({ 
             success: true, 
-            id_parcelle: result.insertId 
+            id_parcelle: result.insertId,
+            message: 'Parcelle créée avec succès'
         }, { status: 201 });
     } catch (error) {
         console.error('POST /api/parcels error:', error);
-        return NextResponse.json({ error: 'Erreur lors de la création de la parcelle' }, { status: 500 });
+        return NextResponse.json({ 
+            error: 'Erreur lors de la création de la parcelle: ' + error.message 
+        }, { status: 500 });
     }
 }
 

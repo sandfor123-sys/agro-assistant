@@ -6,7 +6,7 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const userId = Number(searchParams.get('userId') || 1);
 
-        const [rows] = await pool.query(
+        const result = await pool.query(
             `
             SELECT 
                 s.id_stock,
@@ -20,13 +20,13 @@ export async function GET(request) {
                 i.unite_mesure
             FROM stock s
             JOIN intrant i ON s.id_intrant = i.id_intrant
-            WHERE s.id_utilisateur = ?
+            WHERE s.id_utilisateur = $1
             ORDER BY i.nom_intrant ASC
         `,
             [userId]
         );
 
-        return NextResponse.json({ intrants: rows });
+        return NextResponse.json({ intrants: result.rows });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch intrants' }, { status: 500 });
     }
@@ -46,17 +46,17 @@ export async function POST(request) {
             return NextResponse.json({ error: 'nom_intrant is required' }, { status: 400 });
         }
 
-        const [intrantInsert] = await pool.query(
-            'INSERT INTO intrant (nom_intrant, type, unite_mesure) VALUES (?, ?, ?)',
+        const intrantInsert = await pool.query(
+            'INSERT INTO intrant (nom_intrant, type, unite_mesure) VALUES ($1, $2, $3) RETURNING id_intrant',
             [nom_intrant, type, unite_mesure]
         );
 
-        const id_intrant = intrantInsert.insertId;
+        const id_intrant = intrantInsert.rows[0].id_intrant;
         const today = new Date();
         const date_derniere_maj = today.toISOString().slice(0, 10);
 
         await pool.query(
-            'INSERT INTO stock (id_intrant, quantite_actuelle, date_derniere_maj, id_utilisateur) VALUES (?, ?, ?, ?)',
+            'INSERT INTO stock (id_intrant, quantite_actuelle, date_derniere_maj, id_utilisateur) VALUES ($1, $2, $3, $4)',
             [id_intrant, Number.isFinite(quantite_actuelle) ? quantite_actuelle : null, date_derniere_maj, userId]
         );
 

@@ -1,5 +1,13 @@
-import { processQuery } from '@/lib/dailyAssistant';
 import { NextResponse } from 'next/server';
+
+async function processQuery(query, userId = 1) {
+    const q = query.toLowerCase();
+    return {
+        type: "text",
+        text: "Je peux vous aider avec la météo, les tâches, et les conseils financiers.",
+        data: null
+    };
+}
 
 export async function POST(request) {
     try {

@@ -30,7 +30,7 @@ export async function getDashboardData(userId = 1) {
         JOIN culture c ON p.id_culture = c.id_culture 
         WHERE p.id_utilisateur = ? 
         ORDER BY p.date_semis DESC 
-        LIMIT 4
+        LIMIT 5
       `, [userId]),
             getWeatherAdvice(),
             getImmediateAction(),
@@ -39,10 +39,10 @@ export async function getDashboardData(userId = 1) {
         ]);
 
         const stats = {
-            parcelles: nbParcellesResult[0][0].count,
-            alertes: nbAlertesResult[0][0].count,
-            revenus: '2.5M', // Hardcoded as per PHP original
-            successRate: '85%' // Hardcoded as per PHP original
+            parcelles: nbParcellesResult[0]?.count || 0,
+            alertes: nbAlertesResult[0]?.count || 0,
+            revenus: '2.4M', // Hardcoded as per PHP original
+            successRate: '92%' // Hardcoded as per PHP original
         };
 
         let user = { prenom: 'Jean', nom: 'Kouassi' };

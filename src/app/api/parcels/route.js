@@ -26,8 +26,21 @@ export async function POST(request) {
     try {
         const { nom_parcelle, superficie, id_culture, date_semis, statut, userId = 1 } = await request.json();
 
+        // Logging pour diagnostic
+        console.log('POST /api/parcels - Request data:', {
+            nom_parcelle,
+            superficie,
+            id_culture,
+            date_semis,
+            statut,
+            userId
+        });
+
         if (!nom_parcelle || !superficie || !id_culture || !date_semis) {
-            return NextResponse.json({ error: 'Champs requis manquants: nom_parcelle, superficie, id_culture, date_semis' }, { status: 400 });
+            return NextResponse.json({ 
+                error: 'Champs requis manquants: nom_parcelle, superficie, id_culture, date_semis',
+                received: { nom_parcelle, superficie, id_culture, date_semis }
+            }, { status: 400 });
         }
 
         // Validation des données
@@ -43,10 +56,14 @@ export async function POST(request) {
         const validStatus = statut || 'en_cours';
         const finalStatus = validStatus.length > 20 ? validStatus.substring(0, 20) : validStatus;
 
+        console.log('POST /api/parcels - Attempting database insert...');
+        
         const [result] = await pool.query(`
             INSERT INTO parcelle (nom_parcelle, superficie, id_culture, date_semis, statut, id_utilisateur)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [nom_parcelle, Number(superficie), Number(id_culture), date_semis, finalStatus, userId]);
+
+        console.log('POST /api/parcels - Success:', result);
 
         return NextResponse.json({ 
             success: true, 
@@ -54,9 +71,21 @@ export async function POST(request) {
             message: 'Parcelle créée avec succès'
         }, { status: 201 });
     } catch (error) {
-        console.error('POST /api/parcels error:', error);
+        console.error('POST /api/parcels error:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage
+        });
+        
         return NextResponse.json({ 
-            error: 'Erreur lors de la création de la parcelle: ' + error.message 
+            error: 'Erreur lors de la création de la parcelle: ' + error.message,
+            details: {
+                code: error.code,
+                errno: error.errno,
+                sqlState: error.sqlState
+            }
         }, { status: 500 });
     }
 }

@@ -64,11 +64,28 @@ export async function POST(request) {
             RETURNING id_parcelle
         `, [nom_parcelle, Number(superficie), Number(id_culture), date_semis, finalStatus, userId]);
 
-        console.log('POST /api/parcels - Success:', result.rows[0]);
+        console.log('POST /api/parcels - Success:', result);
+        console.log('POST /api/parcels - Rows:', result.rows);
+        console.log('POST /api/parcels - First row:', result.rows[0]);
+
+        if (!result.rows || result.rows.length === 0) {
+            console.error('POST /api/parcels - No rows returned from INSERT');
+            return NextResponse.json({ 
+                error: 'Erreur lors de la création: aucune donnée retournée' 
+            }, { status: 500 });
+        }
+
+        const newId = result.rows[0].id_parcelle;
+        if (!newId) {
+            console.error('POST /api/parcels - No id_parcelle in returned row:', result.rows[0]);
+            return NextResponse.json({ 
+                error: 'Erreur lors de la création: ID non généré' 
+            }, { status: 500 });
+        }
 
         return NextResponse.json({ 
             success: true, 
-            id_parcelle: result.rows[0].id_parcelle,
+            id_parcelle: newId,
             message: 'Parcelle créée avec succès'
         }, { status: 201 });
     } catch (error) {

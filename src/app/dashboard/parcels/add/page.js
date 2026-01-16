@@ -31,6 +31,13 @@ export default function AddParcelPage() {
         setError('');
 
         try {
+            console.log('Creating parcel with data:', {
+                ...formData,
+                superficie: Number(formData.superficie),
+                id_culture: Number(formData.id_culture),
+                userId: 1
+            });
+
             const res = await fetch('/api/parcels', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -42,8 +49,12 @@ export default function AddParcelPage() {
                 }),
             });
 
+            console.log('Response status:', res.status);
+            console.log('Response ok:', res.ok);
+
             if (!res.ok) {
                 const err = await res.json().catch(() => null);
+                console.error('API Error:', err);
                 if (err.error) {
                     setError(err.error);
                 } else {
@@ -51,6 +62,9 @@ export default function AddParcelPage() {
                 }
                 return;
             }
+
+            const responseData = await res.json();
+            console.log('Success response:', responseData);
 
             router.push('/dashboard/parcels');
         } catch (e) {

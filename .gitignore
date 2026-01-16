@@ -101,3 +101,22 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# Old frontend directory (deprecated)
+frontend/
+
+# Documentation files (keep only README.md)
+GUIDE.md
+HEBERGEMENT_GUIDE.md
+VERCEL_DEPLOY_GUIDE.md
+WORK_FOREVER_SYSTEM.md
+github-commands.txt
+
+# Deployment scripts (keep only package.json scripts)
+deploy-vercel.sh
+deploy-vercel.bat
+deploy.bat
+deploy.sh
+
+# System files
+desktop.ini

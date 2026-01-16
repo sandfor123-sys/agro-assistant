@@ -12,7 +12,7 @@ export default function AddParcelPage() {
         superficie: '',
         id_culture: '',
         date_semis: '',
-        statut: 'active'
+        statut: 'en_cours'
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

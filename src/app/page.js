@@ -1,7 +1,24 @@
+'use client';
+
 import Link from 'next/link';
 import { Sprout, BarChart3, ShieldCheck, ArrowRight, CheckCircle } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
+    useEffect(() => {
+        // Check if user is new and redirect to onboarding
+        const hasVisited = localStorage.getItem('hasVisitedBefore');
+        const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
+        
+        if (!hasVisited && !hasCompletedOnboarding) {
+            localStorage.setItem('hasVisitedBefore', 'true');
+            // Redirect to onboarding after a short delay
+            setTimeout(() => {
+                window.location.href = '/onboarding';
+            }, 1000);
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             {/* Navbar */}
@@ -14,6 +31,9 @@ export default function LandingPage() {
                         <span className="text-xl font-display font-bold text-foreground">AgriAssist CI</span>
                     </div>
                     <div className="flex items-center gap-4">
+                        <Link href="/onboarding" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">
+                            Formation
+                        </Link>
                         <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">
                             Se connecter
                         </Link>
@@ -45,8 +65,8 @@ export default function LandingPage() {
                                 Accéder au Dashboard
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
-                            <Link href="#" className="w-full sm:w-auto bg-surface-alt hover:bg-surface text-foreground border border-white/10 px-8 py-4 rounded-xl text-lg font-semibold transition-all flex items-center justify-center">
-                                Voir la démo
+                            <Link href="/onboarding" className="w-full sm:w-auto bg-surface-alt hover:bg-surface text-foreground border border-white/10 px-8 py-4 rounded-xl text-lg font-semibold transition-all flex items-center justify-center">
+                                🎓 Lancer la formation
                             </Link>
                         </div>
                     </div>

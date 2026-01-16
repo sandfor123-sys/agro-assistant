@@ -18,17 +18,24 @@ const mockPool = {
     }
 };
 
-// Create PostgreSQL connection pool
+// Create PostgreSQL connection pool with direct parameters
 const pool = isBuildMode ? mockPool : new pg.Pool({
-    connectionString: process.env.DATABASE_URL + '?sslmode=require&connect_timeout=10',
-    ssl: process.env.NODE_ENV === 'production' ? { 
+    host: 'db.jwyddxuemrnmaxhjnhgc.supabase.co',
+    port: 5432,
+    database: 'postgres',
+    user: 'postgres',
+    password: 'AgriAssist2026',
+    ssl: {
         rejectUnauthorized: false
-    } : false,
-    // Forcer IPv4
+    },
+    // Forcer IPv4 si possible
     family: 4,
     // Timeout settings
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 15000,
     idleTimeoutMillis: 30000,
+    // Configuration supplémentaire
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
 });
 
 export default pool;

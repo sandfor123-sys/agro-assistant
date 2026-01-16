@@ -6,15 +6,15 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId') || 1;
 
-        const [rows] = await pool.query(`
+        const result = await pool.query(`
             SELECT p.*, c.nom_culture, c.couleur, c.cycle_vie_jours 
             FROM parcelle p 
             JOIN culture c ON p.id_culture = c.id_culture 
-            WHERE p.id_utilisateur = ? 
+            WHERE p.id_utilisateur = $1 
             ORDER BY p.date_semis DESC
         `, [userId]);
 
-        return NextResponse.json({ parcels: rows });
+        return NextResponse.json({ parcels: result.rows });
     } catch (error) {
         console.error('GET /api/parcels error:', error);
         // En cas d'erreur de BDD, retourner un tableau vide plutot que des faux
@@ -58,16 +58,17 @@ export async function POST(request) {
 
         console.log('POST /api/parcels - Attempting database insert...');
         
-        const [result] = await pool.query(`
+        const result = await pool.query(`
             INSERT INTO parcelle (nom_parcelle, superficie, id_culture, date_semis, statut, id_utilisateur)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id_parcelle
         `, [nom_parcelle, Number(superficie), Number(id_culture), date_semis, finalStatus, userId]);
 
-        console.log('POST /api/parcels - Success:', result);
+        console.log('POST /api/parcels - Success:', result.rows[0]);
 
         return NextResponse.json({ 
             success: true, 
-            id_parcelle: result.insertId,
+            id_parcelle: result.rows[0].id_parcelle,
             message: 'Parcelle créée avec succès'
         }, { status: 201 });
     } catch (error) {
@@ -99,16 +100,16 @@ export async function DELETE(request) {
         }
 
         // Verify ownership before deletion
-        const [check] = await pool.query(
-            'SELECT id_parcelle FROM parcelle WHERE id_parcelle = ? AND id_utilisateur = ?',
+        const check = await pool.query(
+            'SELECT id_parcelle FROM parcelle WHERE id_parcelle = $1 AND id_utilisateur = $2',
             [id_parcelle, userId]
         );
 
-        if (check.length === 0) {
+        if (check.rows.length === 0) {
             return NextResponse.json({ error: 'Parcelle non trouvée ou non autorisée' }, { status: 404 });
         }
 
-        await pool.query('DELETE FROM parcelle WHERE id_parcelle = ?', [id_parcelle]);
+        await pool.query('DELETE FROM parcelle WHERE id_parcelle = $1', [id_parcelle]);
 
         return NextResponse.json({ success: true });
     } catch (error) {

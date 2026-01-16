@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sprout, Calendar, MapPin, ArrowRight, Plus, AlertTriangle, Trash2, CheckCircle2, Edit2, Save, X, MoreVertical } from 'lucide-react';
+import { Sprout, Calendar, MapPin, ArrowRight, Plus, AlertTriangle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 async function fetchParcels(userId = 1) {
@@ -16,8 +16,6 @@ export default function ParcelsPage() {
     const [parcels, setParcels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeMenu, setActiveMenu] = useState(null);
-    const menuRef = useRef(null);
 
     useEffect(() => {
         async function load() {
@@ -31,17 +29,6 @@ export default function ParcelsPage() {
             }
         }
         load();
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setActiveMenu(null);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const handleDelete = async (id_parcelle, nom_parcelle) => {
@@ -68,24 +55,6 @@ export default function ParcelsPage() {
         }
     };
 
-    const handleMenuAction = (action, parcel) => {
-        setActiveMenu(null);
-        switch (action) {
-            case 'view':
-                router.push(`/dashboard/parcels/${parcel.id_parcelle}`);
-                break;
-            case 'edit':
-                router.push(`/dashboard/parcels/${parcel.id_parcelle}`);
-                break;
-            case 'delete':
-                handleDelete(parcel.id_parcelle, parcel.nom_parcelle);
-                break;
-            case 'report':
-                router.push(`/dashboard/alerts/declare?parcel=${parcel.id_parcelle}`);
-                break;
-        }
-    };
-
     if (loading) {
         return (
             <div className="p-4 md:p-8 max-w-7xl mx-auto">
@@ -103,7 +72,7 @@ export default function ParcelsPage() {
     }
 
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto" ref={menuRef}>
+        <div className="p-4 md:p-8 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-display font-bold text-foreground mb-2">Mes Parcelles</h1>
@@ -130,20 +99,22 @@ export default function ParcelsPage() {
                     const now = new Date();
                     const daysSincePlanting = Math.floor((now - plantingDate) / (1000 * 60 * 60 * 24));
                     const progress = Math.min(100, Math.round((daysSincePlanting / p.cycle_vie_jours) * 100));
-                    const isActive = activeMenu === p.id_parcelle;
 
                     return (
                         <div 
                             key={p.id_parcelle}
-                            className="bg-surface rounded-2xl border border-border overflow-hidden hover:border-primary/50 transition-all group shadow-sm relative"
+                            className="bg-surface rounded-2xl border border-border overflow-hidden hover:border-primary/50 transition-all group shadow-sm"
                         >
                             <div className="h-3 w-full" style={{ backgroundColor: p.couleur || 'var(--color-primary)' }}></div>
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex-1">
-                                        <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                                        <Link
+                                            href={`/dashboard/parcels/${p.id_parcelle}`}
+                                            className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors hover:underline block"
+                                        >
                                             {p.nom_parcelle}
-                                        </h3>
+                                        </Link>
                                         <div className="flex items-center gap-2 text-text-tertiary text-sm">
                                             <Sprout size={14} />
                                             <span>{p.nom_culture}</span>
@@ -153,54 +124,16 @@ export default function ParcelsPage() {
                                         <div className="bg-surface-alt px-3 py-1 rounded-full text-xs font-semibold text-primary border border-border">
                                             {progress}%
                                         </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveMenu(isActive ? null : p.id_parcelle);
-                                                }}
-                                                className="p-1.5 rounded-lg bg-surface-alt hover:bg-surface border border-border transition-all"
-                                                title="Options"
-                                            >
-                                                <MoreVertical size={16} className={isActive ? 'text-primary' : 'text-text-tertiary'} />
-                                            </button>
-                                            
-                                            {isActive && (
-                                                <div className="absolute right-0 top-full mt-1 w-48 bg-surface border border-border rounded-xl shadow-lg z-50 overflow-hidden">
-                                                    <div className="py-1">
-                                                        <button
-                                                            onClick={() => handleMenuAction('view', p)}
-                                                            className="w-full px-4 py-2.5 text-left hover:bg-surface-alt transition-colors flex items-center gap-3 text-sm"
-                                                        >
-                                                            <ArrowRight size={16} className="text-text-tertiary" />
-                                                            Voir les détails
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleMenuAction('edit', p)}
-                                                            className="w-full px-4 py-2.5 text-left hover:bg-surface-alt transition-colors flex items-center gap-3 text-sm"
-                                                        >
-                                                            <Edit2 size={16} className="text-blue-500" />
-                                                            Modifier
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleMenuAction('report', p)}
-                                                            className="w-full px-4 py-2.5 text-left hover:bg-surface-alt transition-colors flex items-center gap-3 text-sm"
-                                                        >
-                                                            <AlertTriangle size={16} className="text-amber-500" />
-                                                            Signaler un problème
-                                                        </button>
-                                                        <div className="border-t border-border my-1"></div>
-                                                        <button
-                                                            onClick={() => handleMenuAction('delete', p)}
-                                                            className="w-full px-4 py-2.5 text-left hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-3 text-sm"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                            Supprimer
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(p.id_parcelle, p.nom_parcelle);
+                                            }}
+                                            className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
+                                            title="Supprimer"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 </div>
 
@@ -231,22 +164,13 @@ export default function ParcelsPage() {
 
                                 {/* Quick Actions */}
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleMenuAction('report', p)}
-                                        className="flex-1 py-2 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 flex items-center justify-center gap-1 text-xs font-semibold transition-all"
-                                        title="Signaler un problème"
+                                    <Link
+                                        href={`/dashboard/alerts/declare?parcel=${p.id_parcelle}`}
+                                        className="w-full py-2 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 flex items-center justify-center gap-1 text-xs font-semibold transition-all"
                                     >
                                         <AlertTriangle size={14} />
-                                        Signaler
-                                    </button>
-                                    <button
-                                        onClick={() => handleMenuAction('view', p)}
-                                        className="flex-1 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white flex items-center justify-center gap-1 text-xs font-semibold transition-all"
-                                        title="Voir les détails complets"
-                                    >
-                                        <ArrowRight size={14} />
-                                        Détails
-                                    </button>
+                                        Signaler un problème
+                                    </Link>
                                 </div>
                             </div>
                         </div>

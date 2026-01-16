@@ -282,6 +282,13 @@ export default function ParcelDetailPage({ params }) {
                             )}
 
                             <div className="pt-8 border-t border-border mt-8 flex justify-between gap-4">
+                                <Link
+                                    href={`/dashboard/alerts/declare?parcel=${parcel.id_parcelle}`}
+                                    className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+                                >
+                                    <AlertTriangle size={18} />
+                                    Signaler un problème
+                                </Link>
                                 <button
                                     type="button"
                                     onClick={handleDelete}

@@ -24,9 +24,9 @@ export async function getWeatherAdvice() {
 
 export async function getImmediateAction() {
     const actions = [
-        { icon: '💧', message: 'Vérifier l\'arrosage des jeunes plants', link: '/parcels' },
-        { icon: '🌱', message: 'Inspecter les parcelles pour détecter maladies', link: '/parcels' },
-        { icon: '📊', message: 'Mettre à jour votre inventaire de stock', link: '/inventory' },
+        { icon: '💧', message: 'Vérifier l\'arrosage des jeunes plants', link: '/dashboard/parcels' },
+        { icon: '🌱', message: 'Inspecter les parcelles pour détecter maladies', link: '/dashboard/parcels' },
+        { icon: '📊', message: 'Mettre à jour votre inventaire de stock', link: '/dashboard/inventory' },
     ];
     return actions[Math.floor(Math.random() * actions.length)];
 }

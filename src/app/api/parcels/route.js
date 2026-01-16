@@ -21,6 +21,29 @@ export async function GET(request) {
     }
 }
 
+export async function POST(request) {
+    try {
+        const { nom_parcelle, superficie, id_culture, date_semis, statut, userId = 1 } = await request.json();
+
+        if (!nom_parcelle || !superficie || !id_culture || !date_semis) {
+            return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 });
+        }
+
+        const [result] = await pool.query(`
+            INSERT INTO parcelle (nom_parcelle, superficie, id_culture, date_semis, statut, id_utilisateur)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [nom_parcelle, superficie, id_culture, date_semis, statut || 'active', userId]);
+
+        return NextResponse.json({ 
+            success: true, 
+            id_parcelle: result.insertId 
+        }, { status: 201 });
+    } catch (error) {
+        console.error('POST /api/parcels error:', error);
+        return NextResponse.json({ error: 'Erreur lors de la création de la parcelle' }, { status: 500 });
+    }
+}
+
 export async function DELETE(request) {
     try {
         const { id_parcelle, userId } = await request.json();

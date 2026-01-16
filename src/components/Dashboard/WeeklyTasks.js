@@ -199,21 +199,22 @@ export default function WeeklyTasks({ tasks }) {
                     <h2 className="text-xl font-bold text-foreground">Tâches de la Semaine</h2>
                     <p className="text-sm text-text-secondary">Priorités identifiées par l'IA</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     {lastCompletedTask && (
                         <button
                             type="button"
                             onClick={undoLast}
-                            className="px-3 py-1.5 rounded-lg bg-surface-alt border border-border hover:bg-surface text-xs font-semibold transition-all"
+                            className="px-3 py-1.5 rounded-lg bg-surface-alt border border-border hover:bg-surface text-xs font-semibold transition-all whitespace-nowrap"
                         >
                             Annuler la dernière
                         </button>
                     )}
-                    <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-foreground whitespace-nowrap">
                         <input
                             type="checkbox"
                             checked={showPersonnel}
                             onChange={(e) => setShowPersonnel(e.target.checked)}
+                            className="rounded border-border text-primary focus:ring-primary"
                         />
                         Personnel
                     </label>
@@ -221,7 +222,7 @@ export default function WeeklyTasks({ tasks }) {
                         <button
                             type="button"
                             onClick={() => setViewMode('daily')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                                 viewMode === 'daily'
                                     ? 'bg-primary text-white shadow-md shadow-primary/20'
                                     : 'text-text-secondary hover:bg-surface-alt'
@@ -233,7 +234,7 @@ export default function WeeklyTasks({ tasks }) {
                         <button
                             type="button"
                             onClick={() => setViewMode('weekly')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                                 viewMode === 'weekly'
                                     ? 'bg-primary text-white shadow-md shadow-primary/20'
                                     : 'text-text-secondary hover:bg-surface-alt'

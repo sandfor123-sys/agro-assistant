@@ -170,7 +170,13 @@ export default function ParcelsPage() {
                         </div>
                         <h3 className="text-xl font-bold text-foreground mb-2">Aucune parcelle</h3>
                         <p className="text-text-secondary mb-6">Commencez par ajouter votre première parcelle de terrain.</p>
-                        <button className="btn-primary">Ajouter une parcelle</button>
+                        <Link 
+                            href="/dashboard/parcels/add"
+                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                        >
+                            <Plus size={20} />
+                            Ajouter une parcelle
+                        </Link>
                     </div>
                 )}
             </div>

@@ -186,23 +186,30 @@ export default async function ParcelDetailPage({ params }) {
                                 </div>
                             </div>
 
-                            <div className="pt-8 border-t border-border mt-8 flex justify-between">
-                                <form action={deleteParcel} onSubmit={(e) => {
-                                    if (!confirm(`Supprimer la parcelle "${parcel.nom_parcelle}" ?\nCette action est irréversible.`)) {
-                                        e.preventDefault();
-                                    }
-                                }}>
-                                    <button type="submit" className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20 flex items-center gap-2">
-                                        <Trash2 size={18} />
-                                        Supprimer
-                                    </button>
-                                </form>
+                            </form>
+                        
+                        <div className="pt-8 border-t border-border mt-8 flex justify-between gap-4">
+                            <form action={deleteParcel}>
+                                <button 
+                                    type="submit" 
+                                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20 flex items-center gap-2"
+                                    onClick={(e) => {
+                                        if (!confirm(`Supprimer la parcelle "${parcel.nom_parcelle}" ?\nCette action est irréversible.`)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                >
+                                    <Trash2 size={18} />
+                                    Supprimer
+                                </button>
+                            </form>
+                            <form action={updateParcel}>
                                 <button type="submit" className="bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-primary/20 flex items-center gap-3">
                                     <Save size={20} />
                                     Enregistrer les modifications
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

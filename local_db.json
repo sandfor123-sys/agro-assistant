@@ -55,9 +55,38 @@
       "date_semis": "2025-12-12",
       "statut": "en_cours",
       "id_utilisateur": 1
+    },
+    {
+      "id_parcelle": 1768934141826,
+      "nom_parcelle": "dzj",
+      "superficie": 3,
+      "id_culture": 3,
+      "date_semis": "2025-10-16",
+      "statut": "en_cours",
+      "id_utilisateur": 1
+    },
+    {
+      "id_parcelle": 1768935083762,
+      "nom_parcelle": "bjnk",
+      "superficie": 0.3,
+      "id_culture": 1,
+      "date_semis": "2025-10-09",
+      "statut": "en_cours",
+      "id_utilisateur": 1
     }
   ],
-  "alerte": [],
+  "alerte": [
+    {
+      "id_alerte": 1,
+      "titre": "rte",
+      "message": "n ",
+      "type": "alerte",
+      "priorite": "moyenne",
+      "lu": 0,
+      "id_utilisateur": 1,
+      "date_creation": "2026-01-20T18:41:43.469Z"
+    }
+  ],
   "intrant": [
     {
       "id_intrant": 1,
@@ -82,6 +111,24 @@
       "nom_intrant": "Semences Maïs",
       "unite_mesure": "kg",
       "type": "semence"
+    },
+    {
+      "id_intrant": 5,
+      "nom_intrant": "Glyphosate",
+      "type": "Herbicide",
+      "unite_mesure": "L"
+    },
+    {
+      "id_intrant": 6,
+      "nom_intrant": "Cyperméthrine",
+      "type": "Insecticide",
+      "unite_mesure": "L"
+    },
+    {
+      "id_intrant": 7,
+      "nom_intrant": "Sulfate de",
+      "type": "Engrais",
+      "unite_mesure": "kg"
     }
   ],
   "stock": [
@@ -105,6 +152,27 @@
       "id_intrant": 4,
       "quantite_actuelle": 10,
       "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+    },
+    {
+      "id_stock": 4,
+      "id_intrant": 5,
+      "quantite_actuelle": null,
+      "date_derniere_maj": "2026-01-20",
+      "id_utilisateur": 1
+    },
+    {
+      "id_stock": 5,
+      "id_intrant": 6,
+      "quantite_actuelle": 6,
+      "date_derniere_maj": "2026-01-20",
+      "id_utilisateur": 1
+    },
+    {
+      "id_stock": 6,
+      "id_intrant": 7,
+      "quantite_actuelle": 2,
+      "date_derniere_maj": "2026-01-20",
+      "id_utilisateur": 1
     }
   ]
 }

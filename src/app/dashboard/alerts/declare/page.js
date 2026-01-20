@@ -2,6 +2,8 @@ import pool from '@/lib/db';
 import DeclareIncidentClient from '@/components/DeclareIncidentClient';
 import { Suspense } from 'react';
 
+export const dynamic = 'force-dynamic';
+
 async function getParcels(userId = 1) {
     try {
         const { rows } = await pool.query('SELECT id_parcelle, nom_parcelle FROM parcelle WHERE id_utilisateur = $1', [userId]);

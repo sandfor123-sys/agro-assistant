@@ -73,7 +73,7 @@ class LocalDatabase {
             if (upperText.startsWith('INSERT')) return this.handleInsert(text, params);
             if (upperText.startsWith('UPDATE')) return this.handleUpdate(text, params);
             if (upperText.startsWith('DELETE')) return this.handleDelete(text, params);
-            if (upperText.startsWith('SHOW COLUMNS')) return { rows: [{ column_name: 'id_parcelle' }] }; // Mock schema check
+            if (upperText.startsWith('SHOW COLUMNS')) return { rows: [{ column_name: 'id_parcelle' }] };
 
             return { rows: [], rowCount: 0 };
         } catch (error) {
@@ -93,8 +93,6 @@ class LocalDatabase {
             return { rows: [{ count }] };
         }
 
-        // Specific handling for common app queries
-
         // 1. Get Parcels + Culture info
         if (lowerText.includes('from parcelle') && lowerText.includes('join culture')) {
             const userId = params[0];
@@ -104,7 +102,6 @@ class LocalDatabase {
                     const c = this.data.culture.find(c => c.id_culture === p.id_culture) || {};
                     return { ...p, nom_culture: c.nom_culture, cycle_vie_jours: c.cycle_vie_jours, couleur: c.couleur };
                 });
-            // Simple sort by date descend (naive)
             rows.sort((a, b) => new Date(b.date_semis) - new Date(a.date_semis));
             return { rows };
         }
@@ -134,7 +131,6 @@ class LocalDatabase {
             const rows = this.data.alerte
                 .filter(a => !userId || a.id_utilisateur == userId)
                 .map(a => {
-                    // Try to join parcelle name if id_parcelle exists
                     let nom_parcelle = null;
                     if (a.id_parcelle) {
                         const p = this.data.parcelle.find(x => x.id_parcelle === a.id_parcelle);
@@ -153,6 +149,9 @@ class LocalDatabase {
             return { rows };
         }
 
+        // 6. Get Intrants (for selection)
+        if (lowerText.includes('from intrant')) return { rows: this.data.intrant };
+
         return { rows: [] };
     }
 
@@ -161,7 +160,6 @@ class LocalDatabase {
 
         if (lowerText.includes('into parcelle')) {
             const newId = this.data.parcelle.length + 1 + Date.now();
-            // Params mapping based on standard query: nom, superf, id_cult, date, statut, userId
             const newParcelle = {
                 id_parcelle: newId,
                 nom_parcelle: params[0],
@@ -178,7 +176,6 @@ class LocalDatabase {
 
         if (lowerText.includes('into alerte')) {
             const newId = this.data.alerte.length + 1;
-            // Simplified param mapping assuming standard query order
             const newAlerte = {
                 id_alerte: newId,
                 titre: params[0],
@@ -187,14 +184,40 @@ class LocalDatabase {
                 priorite: params[3],
                 lu: params[4] || 0,
                 id_utilisateur: params[5],
-                date_creation: params[params.length - 1] // usually last date
+                date_creation: params[params.length - 1]
             };
-            // Optional parcelle id check
             if (params.length === 8) newAlerte.id_parcelle = params[6];
 
             this.data.alerte.push(newAlerte);
             this.save();
             return { rows: [{ id_alerte: newId }], rowCount: 1 };
+        }
+
+        if (lowerText.includes('into intrant')) {
+            const newId = this.data.intrant.length + 1;
+            const newIntrant = {
+                id_intrant: newId,
+                nom_intrant: params[0],
+                type: params[1],
+                unite_mesure: params[2]
+            };
+            this.data.intrant.push(newIntrant);
+            this.save();
+            return { rows: [{ id_intrant: newId }], rowCount: 1 };
+        }
+
+        if (lowerText.includes('into stock')) {
+            const newId = this.data.stock.length + 1;
+            const newStock = {
+                id_stock: newId,
+                id_intrant: params[0],
+                quantite_actuelle: params[1],
+                date_derniere_maj: params[2],
+                id_utilisateur: params[3]
+            };
+            this.data.stock.push(newStock);
+            this.save();
+            return { rows: [{ id_stock: newId }], rowCount: 1 };
         }
 
         return { rows: [], rowCount: 0 };
@@ -203,15 +226,36 @@ class LocalDatabase {
     handleUpdate(text, params) {
         const lowerText = text.toLowerCase();
 
+        // Handle Parcel Update
+        if (lowerText.includes('update parcelle')) {
+            // Logic to find which param is ID. Usually last two [id_parcelle, id_user]
+            const idParcelle = params[params.length - 2];
+            const userId = params[params.length - 1];
+
+            const parcelle = this.data.parcelle.find(p => p.id_parcelle == idParcelle && p.id_utilisateur == userId);
+
+            if (parcelle) {
+                if (params.length >= 5) {
+                    parcelle.nom_parcelle = params[0];
+                    parcelle.superficie = params[1];
+                    parcelle.id_culture = params[2];
+                    parcelle.date_semis = params[3];
+                    parcelle.statut = params[4];
+                    this.save();
+                    return { rows: [], rowCount: 1 };
+                }
+            }
+            return { rows: [], rowCount: 0 };
+        }
+
         if (lowerText.includes('update stock')) {
-            // Find target ID
-            // Params usually: [quant/delta, date, id_target, user_id]
-            const val = params[0];
+            const val = Number(params[0]);
             const date = params[1];
+            // Check if ID is likely the 3rd or 4th depending on query structure
             const idTarget = params[2];
             const userId = params[3];
 
-            const isStockId = lowerText.includes('id_stock =');
+            const isStockId = lowerText.includes('id_stock');
 
             const item = this.data.stock.find(s =>
                 s.id_utilisateur == userId &&
@@ -220,10 +264,9 @@ class LocalDatabase {
 
             if (item) {
                 if (lowerText.includes('greatest')) {
-                    // Logic: quantite + val
-                    item.quantite_actuelle = Math.max(0, (item.quantite_actuelle || 0) + val);
+                    const current = Number(item.quantite_actuelle) || 0;
+                    item.quantite_actuelle = Math.max(0, current + val);
                 } else {
-                    // Logic: set val
                     item.quantite_actuelle = val;
                 }
                 item.date_derniere_maj = date;
@@ -232,7 +275,7 @@ class LocalDatabase {
             }
         }
 
-        return { rows: [], rowCount: 0 }; // Fail safe
+        return { rows: [], rowCount: 0 };
     }
 
     handleDelete(text, params) {

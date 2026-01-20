@@ -146,6 +146,30 @@ export default function InventoryClient({ stocks }) {
 
                         <div className="space-y-4">
                             <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Sélectionner un intrant connu (Optionnel)</label>
+                                <select
+                                    className="w-full bg-surface-alt border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                                    onChange={(e) => {
+                                        const selected = e.target.value;
+                                        if (selected) {
+                                            const [nom, type, unite] = selected.split('|');
+                                            setNomIntrant(nom);
+                                            setType(type);
+                                            setUniteMesure(unite);
+                                        }
+                                    }}
+                                >
+                                    <option value="">-- Choisir un intrant standard --</option>
+                                    <option value="NPK 15-15-15|Engrais|kg">NPK 15-15-15</option>
+                                    <option value="Urée 46%|Engrais|kg">Urée 46%</option>
+                                    <option value="Sulfate de Potassium|Engrais|kg">Sulfate de Potassium</option>
+                                    <option value="Dolomie|Amendement|kg">Dolomie</option>
+                                    <option value="Glyphosate|Herbicide|L">Glyphosate</option>
+                                    <option value="Cyperméthrine|Insecticide|L">Cyperméthrine</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-2">Nom</label>
                                 <input
                                     className="w-full bg-surface-alt border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"

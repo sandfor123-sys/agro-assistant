@@ -30,8 +30,16 @@ if (isBuildMode) {
     pool = mockPool;
 } else {
     if (!process.env.DATABASE_URL) {
-        console.warn('⚠️ WARNING: DATABASE_URL environment variable is not set. Using mock pool to prevent crash.');
-        pool = mockPool;
+        console.warn('⚠️ WARNING: DATABASE_URL not set. Using Persistent Local JSON DB.');
+        // Require strictly inside this block to avoid loading fs/path in Edge Runtime if used later
+        const localDb = require('./localDb').default;
+
+        pool = {
+            query: async (text, params) => {
+                return await localDb.query(text, params);
+            },
+            on: () => { }
+        };
     } else {
         // Parse the connection string manually to ensure options like 'family' are respected
         // improperly by some pg versions when using connectionString directly.

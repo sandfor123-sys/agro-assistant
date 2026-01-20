@@ -1,0 +1,110 @@
+{
+  "utilisateur": [
+    {
+      "id_utilisateur": 1,
+      "nom": "Kouassi",
+      "prenom": "Jean",
+      "email": "jean@agriassist.ci",
+      "role": "agriculteur"
+    }
+  ],
+  "culture": [
+    {
+      "id_culture": 1,
+      "nom_culture": "Maïs",
+      "cycle_vie_jours": 120,
+      "couleur": "#fbbf24"
+    },
+    {
+      "id_culture": 2,
+      "nom_culture": "Manioc",
+      "cycle_vie_jours": 270,
+      "couleur": "#84cc16"
+    },
+    {
+      "id_culture": 3,
+      "nom_culture": "Cacao",
+      "cycle_vie_jours": 1825,
+      "couleur": "#a16207"
+    },
+    {
+      "id_culture": 4,
+      "nom_culture": "Hévéa",
+      "cycle_vie_jours": 2190,
+      "couleur": "#065f46"
+    },
+    {
+      "id_culture": 5,
+      "nom_culture": "Riz",
+      "cycle_vie_jours": 120,
+      "couleur": "#fde047"
+    },
+    {
+      "id_culture": 6,
+      "nom_culture": "Tomate",
+      "cycle_vie_jours": 90,
+      "couleur": "#ef4444"
+    }
+  ],
+  "parcelle": [
+    {
+      "id_parcelle": 1768933620584,
+      "nom_parcelle": "Test",
+      "superficie": 2.4,
+      "id_culture": 1,
+      "date_semis": "2025-12-12",
+      "statut": "en_cours",
+      "id_utilisateur": 1
+    }
+  ],
+  "alerte": [],
+  "intrant": [
+    {
+      "id_intrant": 1,
+      "nom_intrant": "NPK 15-15-15",
+      "unite_mesure": "kg",
+      "type": "engrais"
+    },
+    {
+      "id_intrant": 2,
+      "nom_intrant": "Urée",
+      "unite_mesure": "kg",
+      "type": "engrais"
+    },
+    {
+      "id_intrant": 3,
+      "nom_intrant": "Glyphosate",
+      "unite_mesure": "L",
+      "type": "herbicide"
+    },
+    {
+      "id_intrant": 4,
+      "nom_intrant": "Semences Maïs",
+      "unite_mesure": "kg",
+      "type": "semence"
+    }
+  ],
+  "stock": [
+    {
+      "id_stock": 1,
+      "id_utilisateur": 1,
+      "id_intrant": 1,
+      "quantite_actuelle": 50,
+      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+    },
+    {
+      "id_stock": 2,
+      "id_utilisateur": 1,
+      "id_intrant": 2,
+      "quantite_actuelle": 25,
+      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+    },
+    {
+      "id_stock": 3,
+      "id_utilisateur": 1,
+      "id_intrant": 4,
+      "quantite_actuelle": 10,
+      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+    }
+  ]
+}

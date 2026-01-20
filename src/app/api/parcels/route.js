@@ -37,7 +37,7 @@ export async function POST(request) {
         });
 
         if (!nom_parcelle || !superficie || !id_culture || !date_semis) {
-            return NextResponse.json({ 
+            return NextResponse.json({
                 error: 'Champs requis manquants: nom_parcelle, superficie, id_culture, date_semis',
                 received: { nom_parcelle, superficie, id_culture, date_semis }
             }, { status: 400 });
@@ -57,7 +57,7 @@ export async function POST(request) {
         const finalStatus = validStatus.length > 20 ? validStatus.substring(0, 20) : validStatus;
 
         console.log('POST /api/parcels - Attempting database insert...');
-        
+
         const result = await pool.query(`
             INSERT INTO parcelle (nom_parcelle, superficie, id_culture, date_semis, statut, id_utilisateur)
             VALUES ($1, $2, $3, $4, $5, $6)
@@ -70,21 +70,21 @@ export async function POST(request) {
 
         if (!result.rows || result.rows.length === 0) {
             console.error('POST /api/parcels - No rows returned from INSERT');
-            return NextResponse.json({ 
-                error: 'Erreur lors de la création: aucune donnée retournée' 
+            return NextResponse.json({
+                error: 'Erreur lors de la création: aucune donnée retournée'
             }, { status: 500 });
         }
 
         const newId = result.rows[0].id_parcelle;
         if (!newId) {
             console.error('POST /api/parcels - No id_parcelle in returned row:', result.rows[0]);
-            return NextResponse.json({ 
-                error: 'Erreur lors de la création: ID non généré' 
+            return NextResponse.json({
+                error: 'Erreur lors de la création: ID non généré'
             }, { status: 500 });
         }
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             id_parcelle: newId,
             message: 'Parcelle créée avec succès'
         }, { status: 201 });
@@ -96,9 +96,9 @@ export async function POST(request) {
             sqlState: error.sqlState,
             sqlMessage: error.sqlMessage
         });
-        
-        return NextResponse.json({ 
-            error: 'Erreur lors de la création de la parcelle: ' + error.message,
+
+        return NextResponse.json({
+            error: error.message || 'Erreur inconnue',
             details: {
                 code: error.code,
                 errno: error.errno,

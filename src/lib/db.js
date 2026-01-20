@@ -7,9 +7,18 @@ const isBuildMode = process.env.NODE_ENV === 'production' && !process.env.DATABA
 // Mock pool for build mode
 const mockPool = {
     query: async (text, params) => {
+        console.log('📝 Mock DB Query:', text.substring(0, 50) + '...', params);
         if (text.includes('SELECT COUNT(*)')) {
             return { rows: [{ count: 0 }] };
         }
+        if (text.includes('INSERT')) {
+            // Return a fake ID for inserts
+            return { rows: [{ id: 1, id_parcelle: 1, id_alerte: 1 }], rowCount: 1 };
+        }
+        if (text.includes('DELETE') || text.includes('UPDATE')) {
+            return { rows: [], rowCount: 1 };
+        }
+        // Default select
         return { rows: [] };
     },
     on: () => { } // Mock event listener

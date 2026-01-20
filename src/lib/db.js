@@ -24,20 +24,37 @@ if (isBuildMode) {
         console.warn('⚠️ WARNING: DATABASE_URL environment variable is not set. Using mock pool to prevent crash.');
         pool = mockPool;
     } else {
-        pool = new pg.Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: {
-                rejectUnauthorized: false
-            },
-            connectionTimeoutMillis: 10000, // Reduced for serverless
-            idleTimeoutMillis: 10000,       // Reduced for serverless
-            max: 10,                        // Limit pool size for serverless
-            family: 4                       // Force IPv4 to avoid ENETUNREACH
-        });
+        // Parse the connection string manually to ensure options like 'family' are respected
+        // improperly by some pg versions when using connectionString directly.
+        try {
+            const url = new URL(process.env.DATABASE_URL);
 
-        pool.on('error', (err) => {
-            console.error('Unexpected error on idle client', err);
-        });
+            pool = new pg.Pool({
+                user: url.username,
+                password: url.password,
+                host: url.hostname,
+                port: parseInt(url.port || '5432'),
+                database: url.pathname.slice(1), // remove leading slash
+                ssl: {
+                    rejectUnauthorized: false
+                },
+                connectionTimeoutMillis: 10000,
+                idleTimeoutMillis: 10000,
+                max: 10,
+                family: 4 // Strictly force IPv4
+            });
+
+            pool.on('error', (err) => {
+                console.error('Unexpected error on idle client', err);
+            });
+        } catch (e) {
+            console.error('Failed to parse DATABASE_URL, falling back to connectionString', e);
+            pool = new pg.Pool({
+                connectionString: process.env.DATABASE_URL,
+                ssl: { rejectUnauthorized: false },
+                family: 4
+            });
+        }
     }
 }
 export default pool;

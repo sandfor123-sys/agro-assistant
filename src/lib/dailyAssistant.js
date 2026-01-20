@@ -1,4 +1,5 @@
 import pool from './db';
+import { predictionEngine } from './predictionEngine';
 
 export function getGreeting() {
     const hour = new Date().getHours();
@@ -34,12 +35,10 @@ export async function getFinancialTip() {
     return tips[Math.floor(Math.random() * tips.length)];
 }
 
-import { predictionEngine } from './predictionEngine';
-
 export async function getWeeklyTasks(userId = 1) {
     const tasks = [];
     try {
-        const [parcels] = await pool.query(`
+        const parcelsResult = await pool.query(`
             SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
             FROM parcelle p 
             JOIN culture c ON p.id_culture = c.id_culture 
@@ -49,7 +48,7 @@ export async function getWeeklyTasks(userId = 1) {
         // Mock weather for now - in future connect to a real API
         const weather = await getWeatherAdvice();
 
-        for (const p of parcels?.rows || []) {
+        for (const p of parcelsResult.rows || []) {
             const cropTasks = predictionEngine.generateTasks(p, weather);
             tasks.push(...cropTasks);
         }
@@ -84,10 +83,10 @@ export async function getWeeklyTasks(userId = 1) {
 
 export async function syncGroundedAlerts(userId = 1) {
     try {
-        const [parcels] = await pool.query('SELECT * FROM parcelle WHERE id_utilisateur = $1', [userId]);
+        const parcelsResult = await pool.query('SELECT * FROM parcelle WHERE id_utilisateur = $1', [userId]);
         const weather = await getWeatherAdvice();
 
-        for (const p of parcels?.rows || []) {
+        for (const p of parcelsResult.rows || []) {
             // Check for critical weather risks
             if (weather.desc.includes('Pluie') || weather.desc.includes('Orage')) {
                 await triggerAlertIfNotExists(
@@ -106,14 +105,14 @@ export async function syncGroundedAlerts(userId = 1) {
 
 export async function triggerAlertIfNotExists(userId, titre, message, type, priorite) {
     try {
-        const [existing] = await pool.query(
-            "SELECT id_alerte FROM alerte WHERE id_utilisateur = ? AND titre = ? AND lu = 0 LIMIT 1",
+        const existingResult = await pool.query(
+            "SELECT id_alerte FROM alerte WHERE id_utilisateur = $1 AND titre = $2 AND lu = 0 LIMIT 1",
             [userId, titre]
         );
 
-        if (existing.length === 0) {
+        if (existingResult.rows.length === 0) {
             await pool.query(
-                "INSERT INTO alerte (titre, message, type, priorite, lu, id_utilisateur, date_creation) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO alerte (titre, message, type, priorite, lu, id_utilisateur, date_creation) VALUES ($1, $2, $3, $4, $5, $6, $7)",
                 [titre, message, String(type).slice(0, 50), priorite, 0, userId, new Date()]
             );
         }

@@ -21,23 +21,23 @@ if (isBuildMode) {
     pool = mockPool;
 } else {
     if (!process.env.DATABASE_URL) {
-        console.warn('⚠️ WARNING: DATABASE_URL environment variable is not set. Database features will fail.');
+        console.warn('⚠️ WARNING: DATABASE_URL environment variable is not set. Using mock pool to prevent crash.');
+        pool = mockPool;
+    } else {
+        pool = new pg.Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: {
+                rejectUnauthorized: false
+            },
+            connectionTimeoutMillis: 10000, // Reduced for serverless
+            idleTimeoutMillis: 10000,       // Reduced for serverless
+            max: 10,                        // Limit pool size for serverless
+            family: 4                       // Force IPv4 to avoid ENETUNREACH
+        });
+
+        pool.on('error', (err) => {
+            console.error('Unexpected error on idle client', err);
+        });
     }
-
-    pool = new pg.Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-        },
-        connectionTimeoutMillis: 10000, // Reduced for serverless
-        idleTimeoutMillis: 10000,       // Reduced for serverless
-        max: 10                         // Limit pool size for serverless
-    });
-
-    pool.on('error', (err) => {
-        console.error('Unexpected error on idle client', err);
-        // Don't exit process in serverless environment usually, but log critical error
-    });
 }
-
 export default pool;

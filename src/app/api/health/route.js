@@ -41,7 +41,7 @@ async function getSystemHealth() {
     // Database connection check
     try {
       const { default: pool } = await import('@/lib/db');
-      const [rows] = await pool.query('SELECT 1 as test');
+      const { rows } = await pool.query('SELECT 1 as test');
       health.checks.database = {
         status: 'healthy',
         responseTime: 'fast'
@@ -79,7 +79,7 @@ async function getSystemHealth() {
     // Overall status
     const hasErrors = Object.values(health.checks).some(check => check.status === 'error');
     const hasWarnings = Object.values(health.checks).some(check => check.status === 'warning');
-    
+
     if (hasErrors) {
       health.status = 'unhealthy';
     } else if (hasWarnings) {
@@ -101,7 +101,7 @@ function formatUptime(seconds) {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  
+
   if (days > 0) {
     return `${days}d ${hours}h ${minutes}m`;
   } else if (hours > 0) {
@@ -114,24 +114,24 @@ function formatUptime(seconds) {
 export async function GET() {
   try {
     const health = await getSystemHealth();
-    
+
     // Log health status
     logHealth(`Health check completed: ${health.status}`);
-    
+
     // Return appropriate HTTP status
-    const statusCode = health.status === 'healthy' ? 200 : 
-                     health.status === 'degraded' ? 200 : 
-                     health.status === 'unhealthy' ? 503 : 500;
-    
+    const statusCode = health.status === 'healthy' ? 200 :
+      health.status === 'degraded' ? 200 :
+        health.status === 'unhealthy' ? 503 : 500;
+
     return NextResponse.json(health, { status: statusCode });
   } catch (error) {
     logHealth(`Health endpoint error: ${error.message}`, 'ERROR');
     return NextResponse.json(
-      { 
-        status: 'error', 
+      {
+        status: 'error',
         error: error.message,
         timestamp: new Date().toISOString()
-      }, 
+      },
       { status: 500 }
     );
   }
@@ -141,18 +141,18 @@ export async function POST() {
   try {
     // Manual health check trigger
     const health = await getSystemHealth();
-    
+
     // Send alert if unhealthy
     if (health.status !== 'healthy') {
       logHealth(`ALERT: System status is ${health.status}`, 'ALERT');
-      
+
       // Here you could add email/SMS notifications
       // await sendAlert(health);
     }
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       message: 'Health check completed',
-      health 
+      health
     });
   } catch (error) {
     logHealth(`Manual health check failed: ${error.message}`, 'ERROR');

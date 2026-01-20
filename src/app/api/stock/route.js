@@ -29,16 +29,16 @@ export async function PATCH(request) {
             }
 
             const whereClause = Number.isFinite(id_stock)
-                ? 'id_stock = ? AND id_utilisateur = ?'
-                : 'id_intrant = ? AND id_utilisateur = ?';
+                ? 'id_stock = $3 AND id_utilisateur = $4'
+                : 'id_intrant = $3 AND id_utilisateur = $4';
             const whereArgs = Number.isFinite(id_stock) ? [id_stock, userId] : [id_intrant, userId];
 
-            const [result] = await pool.query(
-                `UPDATE stock SET quantite_actuelle = ?, date_derniere_maj = ? WHERE ${whereClause}`,
+            const result = await pool.query(
+                `UPDATE stock SET quantite_actuelle = $1, date_derniere_maj = $2 WHERE ${whereClause}`,
                 [quantite_actuelle, date_derniere_maj, ...whereArgs]
             );
 
-            if (result.affectedRows === 0) {
+            if (result.rowCount === 0) {
                 return NextResponse.json({ error: 'Stock row not found' }, { status: 404 });
             }
 
@@ -51,18 +51,18 @@ export async function PATCH(request) {
         }
 
         const whereClause = Number.isFinite(id_stock)
-            ? 'id_stock = ? AND id_utilisateur = ?'
-            : 'id_intrant = ? AND id_utilisateur = ?';
+            ? 'id_stock = $3 AND id_utilisateur = $4'
+            : 'id_intrant = $3 AND id_utilisateur = $4';
         const whereArgs = Number.isFinite(id_stock) ? [id_stock, userId] : [id_intrant, userId];
 
-        const [result] = await pool.query(
+        const result = await pool.query(
             `UPDATE stock 
-             SET quantite_actuelle = GREATEST(0, COALESCE(quantite_actuelle, 0) + ?), date_derniere_maj = ?
+             SET quantite_actuelle = GREATEST(0, COALESCE(quantite_actuelle, 0) + $1), date_derniere_maj = $2
              WHERE ${whereClause}`,
             [delta, date_derniere_maj, ...whereArgs]
         );
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return NextResponse.json({ error: 'Stock row not found' }, { status: 404 });
         }
 

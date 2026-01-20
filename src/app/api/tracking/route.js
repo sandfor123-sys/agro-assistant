@@ -7,7 +7,7 @@ export async function GET(request) {
         const userId = Number(searchParams.get('userId') || 1);
 
         // Get parcelles avec leurs informations de suivi
-        const [rows] = await pool.query(`
+        const { rows } = await pool.query(`
             SELECT 
                 p.id_parcelle,
                 p.nom_parcelle,
@@ -18,7 +18,7 @@ export async function GET(request) {
                 c.cycle_vie_jours
             FROM parcelle p
             LEFT JOIN culture c ON p.id_culture = c.id_culture
-            WHERE p.id_utilisateur = ?
+            WHERE p.id_utilisateur = $1
             ORDER BY p.date_semis DESC
         `, [userId]);
 

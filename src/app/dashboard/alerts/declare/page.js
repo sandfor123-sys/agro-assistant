@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 async function getParcels(userId = 1) {
     try {
-        const [rows] = await pool.query('SELECT id_parcelle, nom_parcelle FROM parcelle WHERE id_utilisateur = ?', [userId]);
+        const { rows } = await pool.query('SELECT id_parcelle, nom_parcelle FROM parcelle WHERE id_utilisateur = $1', [userId]);
         return rows;
     } catch (error) {
         console.error('Error fetching parcels:', error);

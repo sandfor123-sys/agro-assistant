@@ -3,11 +3,11 @@ import InventoryClient from '@/components/InventoryClient';
 
 async function getStock(userId = 1) {
     try {
-        const [rows] = await pool.query(`
+        const { rows } = await pool.query(`
         SELECT s.*, i.nom_intrant, i.unite_mesure 
         FROM stock s 
         JOIN intrant i ON s.id_intrant = i.id_intrant 
-        WHERE s.id_utilisateur = ?
+        WHERE s.id_utilisateur = $1
     `, [userId]);
         return rows;
     } catch (error) {

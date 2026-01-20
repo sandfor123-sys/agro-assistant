@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { logger } from './logger';
 
 // Check if we're in build mode (no database available)
 const isBuildMode = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL;
@@ -6,36 +7,37 @@ const isBuildMode = process.env.NODE_ENV === 'production' && !process.env.DATABA
 // Mock pool for build mode
 const mockPool = {
     query: async (text, params) => {
-        console.log('Mock query (build mode):', text, params);
-        // Return empty results for all queries during build
         if (text.includes('SELECT COUNT(*)')) {
             return { rows: [{ count: 0 }] };
         }
-        if (text.includes('SELECT')) {
-            return { rows: [] };
-        }
         return { rows: [] };
-    }
+    },
+    on: () => { } // Mock event listener
 };
 
-// Create PostgreSQL connection pool with direct parameters
-const pool = isBuildMode ? mockPool : new pg.Pool({
-    host: 'db.jwyddxuemrnmaxhjnhgc.supabase.co',
-    port: 5432,
-    database: 'postgres',
-    user: 'postgres',
-    password: 'AgriAssist2026',
-    ssl: {
-        rejectUnauthorized: false
-    },
-    // Forcer IPv4 si possible
-    family: 4,
-    // Timeout settings
-    connectionTimeoutMillis: 15000,
-    idleTimeoutMillis: 30000,
-    // Configuration supplémentaire
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 10000,
-});
+let pool;
+
+if (isBuildMode) {
+    pool = mockPool;
+} else {
+    if (!process.env.DATABASE_URL) {
+        console.warn('⚠️ WARNING: DATABASE_URL environment variable is not set. Database features will fail.');
+    }
+
+    pool = new pg.Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false
+        },
+        connectionTimeoutMillis: 10000, // Reduced for serverless
+        idleTimeoutMillis: 10000,       // Reduced for serverless
+        max: 10                         // Limit pool size for serverless
+    });
+
+    pool.on('error', (err) => {
+        console.error('Unexpected error on idle client', err);
+        // Don't exit process in serverless environment usually, but log critical error
+    });
+}
 
 export default pool;

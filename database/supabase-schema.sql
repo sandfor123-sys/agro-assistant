@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS culture (
     id_culture SERIAL PRIMARY KEY,
     nom_culture VARCHAR(100) NOT NULL,
     couleur VARCHAR(20) DEFAULT '#10b981',
-    cycle_vie_jours INTEGER DEFAULT 120,
+    cycle_vie_jours INTEGER DEFAULT 121,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

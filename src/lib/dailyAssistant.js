@@ -34,80 +34,73 @@ export async function getFinancialTip() {
     return tips[Math.floor(Math.random() * tips.length)];
 }
 
+import { predictionEngine } from './predictionEngine';
+
 export async function getWeeklyTasks(userId = 1) {
     const tasks = [];
     try {
         const [parcels] = await pool.query(`
-            SELECT p.*, c.nom_culture, c.cycle_vie_jours 
+            SELECT p.*, c.nom_culture, c.cycle_vie_jours, c.couleur
             FROM parcelle p 
             JOIN culture c ON p.id_culture = c.id_culture 
-            WHERE p.id_utilisateur = ?
+            WHERE p.id_utilisateur = $1 AND p.statut = 'en_cours'
         `, [userId]);
 
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        const isStartOfWeek = dayOfWeek === 1; // Monday
-        const isEndOfWeek = dayOfWeek === 5; // Friday
+        // Mock weather for now - in future connect to a real API
+        const weather = await getWeatherAdvice();
 
-        for (const p of parcels) {
-            const plantingDate = new Date(p.date_semis);
-            const daysSincePlanting = Math.floor((now - plantingDate) / (1000 * 60 * 60 * 24));
-            const cycleProgress = (daysSincePlanting / p.cycle_vie_jours) * 100;
-
-            if (cycleProgress >= 0 && cycleProgress < 20) {
-                tasks.push({
-                    parcelle: p.nom_parcelle,
-                    task: 'Surveillance de la levée',
-                    priority: 'high',
-                    icon: '👁️',
-                    id: `task-${p.id_parcelle}-monitor`,
-                    personnel: false
-                });
-            } else if (cycleProgress >= 20 && cycleProgress < 40) {
-                tasks.push({
-                    parcelle: p.nom_parcelle,
-                    task: 'Premier sarclage et fertilisation',
-                    priority: 'high',
-                    icon: '🔧',
-                    id: `task-${p.id_parcelle}-weed`,
-                    personnel: true
-                });
-            }
+        for (const p of parcels?.rows || []) {
+            const cropTasks = predictionEngine.generateTasks(p, weather);
+            tasks.push(...cropTasks);
         }
 
         if (tasks.length === 0) {
             tasks.push({
                 parcelle: 'Général',
-                task: 'Créer votre première parcelle',
-                priority: 'high',
-                icon: '🌱',
-                id: 'task-generic',
+                task: 'Aucune tâche urgente. Profitez-en pour planifier la saison prochaine.',
+                priority: 'low',
+                icon: '📝',
+                id: 'task-no-action',
                 personnel: false
             });
         }
 
+        // Sort by priority (urgent > high > medium > low)
+        const priorityOrder = { 'urgent': 0, 'high': 1, 'medium': 2, 'low': 3 };
+        return tasks.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
     } catch (error) {
         console.error("Error generating tasks:", error);
-        tasks.push({
+        return [{
             parcelle: 'Système',
-            task: 'Vérifier la connexion à la base de données',
-            priority: 'low',
+            task: 'Impossible de générer les tâches (Erreur DB)',
+            priority: 'high',
             icon: '⚠️',
-            id: 'error',
+            id: 'error-db',
             personnel: false
-        });
+        }];
     }
-
-    return tasks;
 }
 
 export async function syncGroundedAlerts(userId = 1) {
     try {
-        // Simplified version - just log that sync was attempted
-        console.log('SyncGroundedAlerts called for user:', userId);
+        const [parcels] = await pool.query('SELECT * FROM parcelle WHERE id_utilisateur = $1', [userId]);
+        const weather = await getWeatherAdvice();
+
+        for (const p of parcels?.rows || []) {
+            // Check for critical weather risks
+            if (weather.desc.includes('Pluie') || weather.desc.includes('Orage')) {
+                await triggerAlertIfNotExists(
+                    userId,
+                    `Risque Météo - ${p.nom_parcelle}`,
+                    `Fortes pluies prévues. Surveillez le drainage.`,
+                    'meteo',
+                    'high'
+                );
+            }
+        }
     } catch (error) {
         console.error('Error in syncGroundedAlerts:', error);
-        // Don't throw error - just log it and continue
     }
 }
 

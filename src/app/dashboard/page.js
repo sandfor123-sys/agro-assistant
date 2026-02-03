@@ -12,43 +12,44 @@ import Link from 'next/link';
 export default async function Dashboard() {
   // Fetch data directly on the server
   const data = await getDashboardData(1);
-  const { user, greeting, stats, weather, action, financialTip, weeklyTasks, recentParcelles } = data;
+  const { greeting, stats, weather, action, financialTip, weeklyTasks, recentParcelles } = data;
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 pb-20">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-4 md:p-8 pb-20 animate-in">
+      <div className="max-w-7xl mx-auto space-y-10">
 
         {/* Header Section */}
-        <DashboardHeader 
-          greeting={greeting} 
-          stats={stats} 
-          weather={weather} 
-          action={action} 
-          financialTip={financialTip} 
-        />
+        <DashboardHeader greeting={greeting} />
 
-        {/* Hero / Weather Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 relative overflow-hidden rounded-2xl p-8 text-white flex flex-col justify-center bg-gradient-to-br from-violet-900 to-indigo-900 border border-white/10 shadow-2xl">
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+        {/* Insights Section (Consolidated Recommendation & Weather) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 relative overflow-hidden rounded-[2.5rem] p-10 text-white flex flex-col justify-center bg-gradient-to-br from-violet-900 via-indigo-900 to-blue-900 border border-white/10 shadow-2xl reveal">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
 
             <div className="relative z-10">
-              <h2 className="text-2xl font-bold mb-2">Aperçu de la journée</h2>
-              <p className="opacity-90 max-w-lg mb-6 leading-relaxed">
-                Toutes vos cultures semblent en bonne santé. N'oubliez pas de vérifier les alertes météo pour planifier votre journée.
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
+                  <Activity size={24} className="text-primary-light" />
+                </div>
+                <h2 className="text-3xl font-display font-bold">Aperçu Intelligent</h2>
+              </div>
+
+              <p className="text-lg md:text-xl opacity-90 max-w-2xl mb-10 leading-relaxed font-medium">
+                "Toutes vos cultures semblent en bonne santé. N'oubliez pas de vérifier les alertes météo pour planifier votre journée."
               </p>
 
               {action && (
-                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-                  <span className="text-2xl mr-3">{action.icon}</span>
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 shadow-lg hover:bg-white/15 transition-all group">
+                  <div className="text-3xl mr-4 bg-white/10 p-3 rounded-xl group-hover:scale-110 transition-transform">{action.icon}</div>
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Action Recommandée</div>
-                    <div className="text-sm font-medium">{action.message}</div>
+                    <div className="text-xs font-bold uppercase tracking-[0.2em] text-primary-light mb-1">Action Recommandée</div>
+                    <div className="text-base font-semibold">{action.message}</div>
                   </div>
                   {action.link && (
-                    <Link href={action.link} className="ml-4 p-2 hover:bg-white/20 rounded-full transition-colors">
-                      <ExternalLink size={16} />
+                    <Link href={action.link} className="ml-6 p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                      <ExternalLink size={18} />
                     </Link>
                   )}
                 </div>
@@ -56,22 +57,26 @@ export default async function Dashboard() {
             </div>
           </div>
 
-          <div className="md:col-span-1">
+          <div className="lg:col-span-1 space-y-6 reveal" style={{ animationDelay: '0.1s' }}>
             <WeatherCard weather={weather} />
 
             {financialTip && (
-              <div className="mt-6 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-                <div className="flex items-center gap-2 font-bold mb-2 text-white/90">
-                  <DollarSign size={20} /> Conseil du jour
+              <div className="bg-gradient-to-br from-emerald-500 to-green-700 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+                <div className="flex items-center gap-3 font-bold mb-4 text-white/90">
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    <DollarSign size={20} />
+                  </div>
+                  <span className="tracking-tight text-lg">Conseil du jour</span>
                 </div>
-                <p className="text-sm leading-relaxed">{financialTip}</p>
+                <p className="text-base leading-relaxed font-medium opacity-90">{financialTip}</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal" style={{ animationDelay: '0.2s' }}>
           <StatCard
             title="Parcelles"
             value={stats.parcelles}
@@ -115,7 +120,7 @@ export default async function Dashboard() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 reveal" style={{ animationDelay: '0.3s' }}>
           <div className="lg:col-span-2">
             <RecentParcels parcels={recentParcelles} />
           </div>
@@ -127,10 +132,13 @@ export default async function Dashboard() {
         {/* Floating Assistant Button */}
         <Link
           href="/dashboard/assistant"
-          className="fixed bottom-6 right-6 p-4 bg-primary text-white rounded-2xl shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all z-50 flex items-center gap-2 group"
+          className="fixed bottom-8 right-8 p-5 bg-primary text-white rounded-[2rem] shadow-[0_20px_50px_rgba(217,119,6,0.3)] hover:scale-105 active:scale-95 transition-all z-50 flex items-center gap-3 group border border-white/20 backdrop-blur-sm"
         >
-          <Bot size={24} />
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 font-bold whitespace-nowrap">
+          <div className="relative">
+            <Bot size={28} />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-primary rounded-full"></span>
+          </div>
+          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 font-bold whitespace-nowrap text-lg">
             AgriAssist IA
           </span>
         </Link>

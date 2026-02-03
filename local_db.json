@@ -48,29 +48,11 @@
   ],
   "parcelle": [
     {
-      "id_parcelle": 1768933620584,
-      "nom_parcelle": "Test",
-      "superficie": 2.4,
+      "id_parcelle": 1,
+      "nom_parcelle": "Updated",
+      "superficie": 10,
       "id_culture": 1,
-      "date_semis": "2025-12-12",
-      "statut": "en_cours",
-      "id_utilisateur": 1
-    },
-    {
-      "id_parcelle": 1768934141826,
-      "nom_parcelle": "dzj",
-      "superficie": 3,
-      "id_culture": 3,
-      "date_semis": "2025-10-16",
-      "statut": "en_cours",
-      "id_utilisateur": 1
-    },
-    {
-      "id_parcelle": 1768935083762,
-      "nom_parcelle": "bjnk",
-      "superficie": 0.3,
-      "id_culture": 1,
-      "date_semis": "2025-10-09",
+      "date_semis": "2025-01-01",
       "statut": "en_cours",
       "id_utilisateur": 1
     }
@@ -129,6 +111,18 @@
       "nom_intrant": "Sulfate de",
       "type": "Engrais",
       "unite_mesure": "kg"
+    },
+    {
+      "id_intrant": 8,
+      "nom_intrant": "Compost",
+      "type": "Amendement",
+      "unite_mesure": "kg"
+    },
+    {
+      "id_intrant": 9,
+      "nom_intrant": "Test",
+      "type": "Engrais",
+      "unite_mesure": "kg"
     }
   ],
   "stock": [
@@ -136,42 +130,21 @@
       "id_stock": 1,
       "id_utilisateur": 1,
       "id_intrant": 1,
-      "quantite_actuelle": 50,
-      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+      "quantite_actuelle": 95,
+      "date_derniere_maj": "2026-01-27"
     },
     {
       "id_stock": 2,
-      "id_utilisateur": 1,
-      "id_intrant": 2,
-      "quantite_actuelle": 25,
-      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
+      "id_intrant": 8,
+      "quantite_actuelle": 5,
+      "date_derniere_maj": "2026-01-27",
+      "id_utilisateur": 1
     },
     {
       "id_stock": 3,
-      "id_utilisateur": 1,
-      "id_intrant": 4,
-      "quantite_actuelle": 10,
-      "date_derniere_maj": "2026-01-20T18:26:18.526Z"
-    },
-    {
-      "id_stock": 4,
-      "id_intrant": 5,
-      "quantite_actuelle": null,
-      "date_derniere_maj": "2026-01-20",
-      "id_utilisateur": 1
-    },
-    {
-      "id_stock": 5,
-      "id_intrant": 6,
-      "quantite_actuelle": 6,
-      "date_derniere_maj": "2026-01-20",
-      "id_utilisateur": 1
-    },
-    {
-      "id_stock": 6,
-      "id_intrant": 7,
-      "quantite_actuelle": 2,
-      "date_derniere_maj": "2026-01-20",
+      "id_intrant": 9,
+      "quantite_actuelle": 67,
+      "date_derniere_maj": "2026-02-03",
       "id_utilisateur": 1
     }
   ]

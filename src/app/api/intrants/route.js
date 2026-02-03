@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -57,7 +59,7 @@ export async function POST(request) {
 
         await pool.query(
             'INSERT INTO stock (id_intrant, quantite_actuelle, date_derniere_maj, id_utilisateur) VALUES ($1, $2, $3, $4)',
-            [id_intrant, Number.isFinite(quantite_actuelle) ? quantite_actuelle : null, date_derniere_maj, userId]
+            [id_intrant, Number.isFinite(quantite_actuelle) ? quantite_actuelle : 0, date_derniere_maj, userId]
         );
 
         return NextResponse.json({ ok: true, id_intrant });

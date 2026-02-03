@@ -164,8 +164,13 @@ export default function InventoryClient({ stocks }) {
                                     <option value="Urée 46%|Engrais|kg">Urée 46%</option>
                                     <option value="Sulfate de Potassium|Engrais|kg">Sulfate de Potassium</option>
                                     <option value="Dolomie|Amendement|kg">Dolomie</option>
+                                    <option value="Fientes de volaille|Amendement|kg">Fientes de volaille (Bio)</option>
+                                    <option value="Compost|Amendement|kg">Compost (Bio)</option>
                                     <option value="Glyphosate|Herbicide|L">Glyphosate</option>
+                                    <option value="Paraquat|Herbicide|L">Paraquat</option>
                                     <option value="Cyperméthrine|Insecticide|L">Cyperméthrine</option>
+                                    <option value="Lambda-cyhalothrine|Insecticide|L">Lambda-cyhalothrine</option>
+                                    <option value="Fongicide Cacaoyer|Fongicide|kg">Fongicide Cacaoyer</option>
                                 </select>
                             </div>
 
@@ -320,7 +325,7 @@ export default function InventoryClient({ stocks }) {
 
                             <h3 className="text-xl font-bold text-foreground mb-1">{s.nom_intrant}</h3>
                             <div className="text-3xl font-display font-bold text-primary mb-4">
-                                {s.quantite_actuelle} <span className="text-lg font-medium text-text-tertiary">{s.unite_mesure}</span>
+                                {s.quantite_actuelle ?? 0} <span className="text-lg font-medium text-text-tertiary">{s.unite_mesure}</span>
                             </div>
 
                             <div className="flex gap-2 mt-4">

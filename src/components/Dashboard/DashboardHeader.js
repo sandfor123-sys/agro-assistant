@@ -5,7 +5,7 @@ import { Sprout, Bell, Activity, DollarSign, ExternalLink, Bot } from 'lucide-re
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function DashboardHeader({ greeting, stats, weather, action, financialTip }) {
+export default function DashboardHeader({ greeting }) {
     const [user, setUser] = useState({ prenom: 'Agriculteur', nom: '' });
 
     useEffect(() => {
@@ -22,24 +22,25 @@ export default function DashboardHeader({ greeting, stats, weather, action, fina
     }, []);
 
     return (
-        <header className="flex justify-between items-center relative">
+        <header className="flex justify-between items-center relative reveal">
             <div>
-                <h1 className="text-3xl font-display font-bold text-foreground">
-                    {greeting}, {user.prenom} !
+                <div className="text-primary font-bold text-xs uppercase tracking-[0.3em] mb-2">TABLEAU DE BORD</div>
+                <h1 className="text-4xl md:text-5xl font-display font-black text-foreground tracking-tight">
+                    {greeting}, <span className="text-primary">{user.prenom}</span>
                 </h1>
-                <p className="text-text-secondary mt-1">
-                    Bienvenue sur votre tableau de bord agricole intelligent
+                <p className="text-text-secondary mt-2 font-medium text-lg opacity-80">
+                    Gérez votre exploitation avec intelligence.
                 </p>
             </div>
-            <div className="flex items-center gap-4">
-                <div className="text-right hidden md:block">
-                    <div className="text-sm text-text-secondary">Aujourd'hui</div>
-                    <div className="font-semibold text-foreground">
+            <div className="flex items-center gap-6">
+                <div className="text-right hidden lg:block">
+                    <div className="text-xs font-bold text-text-tertiary uppercase tracking-wider mb-1">Aujourd'hui</div>
+                    <div className="font-bold text-foreground text-lg">
                         {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                 </div>
-                <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-                    <span className="text-lg font-bold">
+                <div className="w-16 h-16 bg-white shadow-xl rounded-[1.25rem] border border-border/30 flex items-center justify-center group cursor-pointer hover:scale-110 transition-transform">
+                    <span className="text-2xl font-black text-primary group-hover:rotate-12 transition-transform">
                         {user.prenom ? user.prenom.charAt(0).toUpperCase() : 'A'}
                     </span>
                 </div>

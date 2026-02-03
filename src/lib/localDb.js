@@ -211,7 +211,7 @@ class LocalDatabase {
             const newStock = {
                 id_stock: newId,
                 id_intrant: params[0],
-                quantite_actuelle: params[1],
+                quantite_actuelle: params[1] != null ? Number(params[1]) : 0,
                 date_derniere_maj: params[2],
                 id_utilisateur: params[3]
             };
@@ -228,22 +228,45 @@ class LocalDatabase {
 
         // Handle Parcel Update
         if (lowerText.includes('update parcelle')) {
-            // Logic to find which param is ID. Usually last two [id_parcelle, id_user]
-            const idParcelle = params[params.length - 2];
-            const userId = params[params.length - 1];
+            // Find WHERE clause params
+            const match = text.match(/where\s+id_parcelle\s*=\s*\$(\d+)\s+and\s+id_utilisateur\s*=\s*\$(\d+)/i);
+            let idParcelle, userId;
+
+            if (match) {
+                idParcelle = params[parseInt(match[1]) - 1];
+                userId = params[parseInt(match[2]) - 1];
+            } else {
+                idParcelle = params[params.length - 2];
+                userId = params[params.length - 1];
+            }
 
             const parcelle = this.data.parcelle.find(p => p.id_parcelle == idParcelle && p.id_utilisateur == userId);
 
             if (parcelle) {
-                if (params.length >= 5) {
-                    parcelle.nom_parcelle = params[0];
-                    parcelle.superficie = params[1];
-                    parcelle.id_culture = params[2];
-                    parcelle.date_semis = params[3];
-                    parcelle.statut = params[4];
-                    this.save();
-                    return { rows: [], rowCount: 1 };
+                // Update fields if present in query
+                if (lowerText.includes('nom_parcelle = $')) {
+                    const m = lowerText.match(/nom_parcelle\s*=\s*\$(\d+)/);
+                    if (m) parcelle.nom_parcelle = params[parseInt(m[1]) - 1];
                 }
+                if (lowerText.includes('superficie = $')) {
+                    const m = lowerText.match(/superficie\s*=\s*\$(\d+)/);
+                    if (m) parcelle.superficie = params[parseInt(m[1]) - 1];
+                }
+                if (lowerText.includes('id_culture = $')) {
+                    const m = lowerText.match(/id_culture\s*=\s*\$(\d+)/);
+                    if (m) parcelle.id_culture = params[parseInt(m[1]) - 1];
+                }
+                if (lowerText.includes('date_semis = $')) {
+                    const m = lowerText.match(/date_semis\s*=\s*\$(\d+)/);
+                    if (m) parcelle.date_semis = params[parseInt(m[1]) - 1];
+                }
+                if (lowerText.includes('statut = $')) {
+                    const m = lowerText.match(/statut\s*=\s*\$(\d+)/);
+                    if (m) parcelle.statut = params[parseInt(m[1]) - 1];
+                }
+
+                this.save();
+                return { rows: [], rowCount: 1 };
             }
             return { rows: [], rowCount: 0 };
         }
@@ -251,11 +274,19 @@ class LocalDatabase {
         if (lowerText.includes('update stock')) {
             const val = Number(params[0]);
             const date = params[1];
-            // Check if ID is likely the 3rd or 4th depending on query structure
-            const idTarget = params[2];
-            const userId = params[3];
 
+            // Extract where clause params
+            const whereMatch = lowerText.match(/where\s+(id_stock|id_intrant)\s*=\s*\$(\d+)\s+and\s+id_utilisateur\s*=\s*\$(\d+)/);
+            let idTarget, userId;
             const isStockId = lowerText.includes('id_stock');
+
+            if (whereMatch) {
+                idTarget = params[parseInt(whereMatch[2]) - 1];
+                userId = params[parseInt(whereMatch[3]) - 1];
+            } else {
+                idTarget = params[2];
+                userId = params[3];
+            }
 
             const item = this.data.stock.find(s =>
                 s.id_utilisateur == userId &&
@@ -267,7 +298,7 @@ class LocalDatabase {
                     const current = Number(item.quantite_actuelle) || 0;
                     item.quantite_actuelle = Math.max(0, current + val);
                 } else {
-                    item.quantite_actuelle = val;
+                    item.quantite_actuelle = val != null ? Number(val) : 0;
                 }
                 item.date_derniere_maj = date;
                 this.save();

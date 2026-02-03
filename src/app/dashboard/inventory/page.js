@@ -1,6 +1,8 @@
 import pool from '@/lib/db';
 import InventoryClient from '@/components/InventoryClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getStock(userId = 1) {
     try {
         const { rows } = await pool.query(`

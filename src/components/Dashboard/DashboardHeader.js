@@ -19,6 +19,14 @@ export default function DashboardHeader({ greeting }) {
         } catch (error) {
             console.error('Error loading user info:', error);
         }
+
+        // Listen for storage changes (for profile updates)
+        const handleSync = () => {
+            const info = localStorage.getItem('userInfo');
+            if (info) setUser(JSON.parse(info));
+        };
+        window.addEventListener('storage', handleSync);
+        return () => window.removeEventListener('storage', handleSync);
     }, []);
 
     return (

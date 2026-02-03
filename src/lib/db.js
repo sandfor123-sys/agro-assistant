@@ -27,50 +27,71 @@ const mockPool = {
 let pool;
 
 if (isBuildMode) {
+    console.log('🏗️ Build mode detected: Using Mock DB.');
     pool = mockPool;
 } else {
-    if (!process.env.DATABASE_URL) {
-        console.warn('⚠️ WARNING: DATABASE_URL not set. Using Persistent Local JSON DB.');
-        // Require strictly inside this block to avoid loading fs/path in Edge Runtime if used later
-        const localDb = require('./localDb').default;
+    const databaseUrl = process.env.DATABASE_URL;
 
+    if (!databaseUrl || databaseUrl.includes('placeholder')) {
+        console.warn('⚠️ WARNING: DATABASE_URL not set or placeholder. Using Persistent Local JSON DB.');
+        const localDb = require('./localDb').default;
         pool = {
             query: async (text, params) => {
-                return await localDb.query(text, params);
+                try {
+                    return await localDb.query(text, params);
+                } catch (err) {
+                    console.error('❌ LocalDB Query Error:', err);
+                    return { rows: [], rowCount: 0 };
+                }
             },
             on: () => { }
         };
     } else {
-        // Parse the connection string manually to ensure options like 'family' are respected
-        // improperly by some pg versions when using connectionString directly.
         try {
-            const url = new URL(process.env.DATABASE_URL);
-
-            pool = new pg.Pool({
+            const url = new URL(databaseUrl);
+            const poolConfig = {
                 user: url.username,
                 password: url.password,
                 host: url.hostname,
                 port: parseInt(url.port || '5432'),
-                database: url.pathname.slice(1), // remove leading slash
-                ssl: {
-                    rejectUnauthorized: false
-                },
-                connectionTimeoutMillis: 10000,
+                database: url.pathname.slice(1),
+                ssl: { rejectUnauthorized: false },
+                connectionTimeoutMillis: 5000, // Shorter timeout for faster fallback
                 idleTimeoutMillis: 10000,
                 max: 10,
-                family: 4 // Strictly force IPv4
-            });
+                family: 4
+            };
 
-            pool.on('error', (err) => {
+            const realPool = new pg.Pool(poolConfig);
+
+            // Wrap the query method to catch connection errors and fallback
+            pool = {
+                query: async (text, params) => {
+                    try {
+                        return await realPool.query(text, params);
+                    } catch (err) {
+                        if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.message.includes('timeout')) {
+                            console.error(`🔌 Database Connection Error (${err.code}): Falling back to Local JSON DB during this request.`);
+                            const localDb = require('./localDb').default;
+                            return await localDb.query(text, params);
+                        }
+                        throw err;
+                    }
+                },
+                on: (event, handler) => realPool.on(event, handler),
+                end: () => realPool.end()
+            };
+
+            realPool.on('error', (err) => {
                 console.error('Unexpected error on idle client', err);
             });
         } catch (e) {
-            console.error('Failed to parse DATABASE_URL, falling back to connectionString', e);
-            pool = new pg.Pool({
-                connectionString: process.env.DATABASE_URL,
-                ssl: { rejectUnauthorized: false },
-                family: 4
-            });
+            console.error('Failed to initialize PG pool, falling back to Local JSON DB', e);
+            const localDb = require('./localDb').default;
+            pool = {
+                query: async (text, params) => await localDb.query(text, params),
+                on: () => { }
+            };
         }
     }
 }

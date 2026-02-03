@@ -58,8 +58,13 @@ class LocalDatabase {
     save() {
         try {
             fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2));
+            console.log('💾 Local DB saved successfully.');
         } catch (error) {
-            console.error('Failed to save local DB:', error);
+            if (error.code === 'EROFS' || error.path?.includes('vercel')) {
+                console.warn('⚠️ Read-only file system detected (likely Vercel). Data will only persist in memory for this session.');
+            } else {
+                console.error('❌ Failed to save local DB:', error);
+            }
         }
     }
 

@@ -160,9 +160,9 @@ class MaintenanceScheduler {
 const scheduler = new MaintenanceScheduler();
 
 // Start the scheduler only in non-build/production environments where appropriate
-const isBuild = process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1';
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1' || process.env.CI === '1';
 
-if (typeof window === 'undefined' && !isBuild) {
+if (typeof window === 'undefined' && !isBuild && process.env.NODE_ENV !== 'test') {
   // Run every minute
   const interval = setInterval(() => {
     scheduler.runScheduledTasks();

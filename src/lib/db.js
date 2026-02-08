@@ -8,10 +8,11 @@ const shouldStartLocal =
     process.env.NEXT_PHASE === 'phase-production-build' ||
     !process.env.DATABASE_URL ||
     process.env.DATABASE_URL.includes('placeholder') ||
-    process.env.VERCEL === '1'; // Default to local on Vercel unless DB is confirmed working
+    process.env.VERCEL === '1' ||
+    process.env.CI === '1';
 
 if (shouldStartLocal) {
-    console.log('🏗️ Environment (Build/Vercel) detected: Defaulting to Local JSON DB for stability.');
+    console.log('🏗️ Environment (Build/Vercel/CI) detected: Defaulting to Local JSON DB for stability.');
     useLocalDbFallback = true;
 }
 
@@ -19,7 +20,8 @@ const pool = {
     query: async (text, params) => {
         if (useLocalDbFallback) {
             try {
-                const localDb = require('./localDb').default;
+                // Use a dynamic import or require that is better handled
+                const localDb = (await import('./localDb')).default;
                 return await localDb.query(text, params);
             } catch (err) {
                 console.error('❌ LocalDB Fallback Query Error:', err);
@@ -47,7 +49,7 @@ const pool = {
             } catch (e) {
                 console.error('❌ Failed to initialize PG pool:', e.message);
                 useLocalDbFallback = true;
-                const localDb = require('./localDb').default;
+                const localDb = (await import('./localDb')).default;
                 return await localDb.query(text, params);
             }
         }
@@ -63,7 +65,7 @@ const pool = {
             if (isConnError) {
                 console.error(`🔌 DB Connection Error (${err.code || 'TIMEOUT'}): Switching to Local JSON DB permanently for this session.`);
                 useLocalDbFallback = true;
-                const localDb = require('./localDb').default;
+                const localDb = (await import('./localDb')).default;
                 return await localDb.query(text, params);
             }
             throw err;

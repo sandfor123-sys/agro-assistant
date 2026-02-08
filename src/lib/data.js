@@ -3,8 +3,12 @@ import { getWeeklyTasks, getWeatherAdvice, getImmediateAction, getFinancialTip, 
 
 export async function getDashboardData(userId = 1) {
     try {
+        const isBuild = process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1' || process.env.CI === '1';
+
         // Sync alerts based on simulation phase before fetching data
-        await syncGroundedAlerts(userId);
+        if (!isBuild) {
+            await syncGroundedAlerts(userId);
+        }
 
         const [
             nbParcellesResult,

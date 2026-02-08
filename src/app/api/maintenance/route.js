@@ -10,7 +10,7 @@ class MaintenanceScheduler {
     this.lastCleanup = null;
     this.lastHealthCheck = null;
     this.maintenanceLog = path.join(process.cwd(), 'logs', 'maintenance.log');
-    
+
     // Ensure logs directory exists
     if (!fs.existsSync(path.dirname(this.maintenanceLog))) {
       fs.mkdirSync(path.dirname(this.maintenanceLog), { recursive: true });
@@ -27,13 +27,13 @@ class MaintenanceScheduler {
   async performBackup() {
     try {
       this.log('Starting automatic backup');
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/backup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'database' })
       });
-      
+
       if (response.ok) {
         this.log('Automatic backup completed successfully');
         this.lastBackup = new Date();
@@ -50,15 +50,15 @@ class MaintenanceScheduler {
   async performCleanup() {
     try {
       this.log('Starting automatic cleanup');
-      
+
       // Clear old logs
       logger.clearOldLogs(7);
-      
+
       // Clear old cache entries
       const cacheResponse = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/cache`, {
         method: 'DELETE'
       });
-      
+
       if (cacheResponse.ok) {
         this.log('Automatic cleanup completed successfully');
         this.lastCleanup = new Date();
@@ -75,19 +75,19 @@ class MaintenanceScheduler {
   async performHealthCheck() {
     try {
       this.log('Starting automatic health check');
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/health`);
-      
+
       if (response.ok) {
         const health = await response.json();
         this.log(`Health check completed: ${health.status}`);
         this.lastHealthCheck = new Date();
-        
+
         // Log if unhealthy
         if (health.status !== 'healthy') {
           this.log(`System health degraded: ${health.status}`, 'WARN');
         }
-        
+
         return health;
       } else {
         throw new Error('Health check request failed');
@@ -100,17 +100,17 @@ class MaintenanceScheduler {
 
   async runScheduledTasks() {
     const now = new Date();
-    
+
     // Check if it's time for daily backup (2 AM)
     if (now.getHours() === 2 && now.getMinutes() === 0) {
       await this.performBackup();
     }
-    
+
     // Check if it's time for weekly cleanup (Sunday 3 AM)
     if (now.getDay() === 0 && now.getHours() === 3 && now.getMinutes() === 0) {
       await this.performCleanup();
     }
-    
+
     // Check if it's time for hourly health check
     if (now.getMinutes() === 0) {
       await this.performHealthCheck();
@@ -159,13 +159,21 @@ class MaintenanceScheduler {
 
 const scheduler = new MaintenanceScheduler();
 
-// Start the scheduler
-if (typeof window === 'undefined') {
+// Start the scheduler only in non-build/production environments where appropriate
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build' || process.env.VERCEL === '1';
+
+if (typeof window === 'undefined' && !isBuild) {
   // Run every minute
-  setInterval(() => {
+  const interval = setInterval(() => {
     scheduler.runScheduledTasks();
   }, 60000);
-  
+
+  // Clean up interval if needed (though this is a long-running process)
+  if (process.env.NODE_ENV === 'development') {
+    // Prevent multiple intervals in dev HMR
+    global._maintenanceInterval = interval;
+  }
+
   // Run initial health check
   scheduler.performHealthCheck();
 }
@@ -173,7 +181,7 @@ if (typeof window === 'undefined') {
 export async function GET() {
   try {
     const status = scheduler.getStatus();
-    
+
     return NextResponse.json({
       status: 'success',
       maintenance: status,
@@ -188,7 +196,7 @@ export async function GET() {
 export async function POST() {
   try {
     const { task } = await new Request().json();
-    
+
     let result;
     switch (task) {
       case 'backup':
@@ -203,7 +211,7 @@ export async function POST() {
       default:
         return NextResponse.json({ error: 'Invalid task' }, { status: 400 });
     }
-    
+
     return NextResponse.json({
       success: true,
       task,

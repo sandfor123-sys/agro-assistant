@@ -28,11 +28,18 @@ export async function POST(request) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
+        // Check for simulation header
+        const simulateVercel = request.headers.get('x-simulate-vercel') === 'true';
+        const queryParams = [nom, prenom, email, role, id_utilisateur];
+        if (simulateVercel) {
+            queryParams._options = { simulateVercel: true };
+        }
+
         // We use a simplified update query that works with our LocalDB handleUpdate logic
         // or a real PG database.
         await pool.query(
             'UPDATE utilisateur SET nom = $1, prenom = $2, email = $3, role = $4 WHERE id_utilisateur = $5',
-            [nom, prenom, email, role, id_utilisateur]
+            queryParams
         );
 
         return NextResponse.json({ message: 'User updated successfully' });

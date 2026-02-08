@@ -48,12 +48,12 @@
   ],
   "parcelle": [
     {
-      "id_parcelle": 1,
-      "nom_parcelle": "Updated",
-      "superficie": 10,
+      "id_parcelle": 1768933620584,
+      "nom_parcelle": "Updated Parcel",
+      "superficie": 5.5,
       "id_culture": 1,
-      "date_semis": "2025-01-01",
-      "statut": "en_cours",
+      "date_semis": "2026-01-01",
+      "statut": "termine",
       "id_utilisateur": 1
     }
   ],
@@ -130,22 +130,8 @@
       "id_stock": 1,
       "id_utilisateur": 1,
       "id_intrant": 1,
-      "quantite_actuelle": 95,
+      "quantite_actuelle": 90,
       "date_derniere_maj": "2026-01-27"
-    },
-    {
-      "id_stock": 2,
-      "id_intrant": 8,
-      "quantite_actuelle": 5,
-      "date_derniere_maj": "2026-01-27",
-      "id_utilisateur": 1
-    },
-    {
-      "id_stock": 3,
-      "id_intrant": 9,
-      "quantite_actuelle": 67,
-      "date_derniere_maj": "2026-02-03",
-      "id_utilisateur": 1
     }
   ]
 }

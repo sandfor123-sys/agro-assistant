@@ -71,9 +71,13 @@ export default function ProfilePage() {
             const prenom = names[0] || '';
             const nom = names.slice(1).join(' ') || '';
 
+            const simulateVercel = testerSettings.simulateVercel;
             const res = await fetch('/api/user', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-simulate-vercel': simulateVercel.toString()
+                },
                 body: JSON.stringify({
                     id_utilisateur: 1,
                     prenom,
@@ -84,20 +88,32 @@ export default function ProfilePage() {
             });
 
             if (res.ok) {
-                const updatedUser = { ...tempUser, prenom, nom };
+                const updatedUser = {
+                    ...tempUser,
+                    prenom,
+                    nom,
+                    name: `${prenom} ${nom}`.trim()
+                };
                 setUser(updatedUser);
                 localStorage.setItem('userInfo', JSON.stringify({
                     id_utilisateur: 1,
                     prenom,
                     nom,
                     email: tempUser.email,
-                    role: tempUser.role
+                    role: tempUser.role,
+                    phone: tempUser.phone,
+                    location: tempUser.location
                 }));
                 setEditing(false);
+            } else {
+                const data = await res.json();
+                throw new Error(data.error || 'Erreur lors de la sauvegarde');
             }
         } catch (error) {
             console.error('Save error:', error);
-            alert('Erreur lors de la sauvegarde. Votre environnement est peut-être en lecture seule.');
+            // Even if server fails (e.g. read-only), we might want to keep in localStorage 
+            // but for safety in this specific "fixing" task, we alert the user.
+            alert(`Erreur: ${error.message}. Si vous êtes en mode simulation, c'est normal que le fichier ne change pas.`);
         }
     };
 

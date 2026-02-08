@@ -35,6 +35,7 @@ const INITIAL_DATA = {
 class LocalDatabase {
     constructor() {
         this.data = { ...INITIAL_DATA };
+        this.simulationMode = false;
         this.load();
     }
 
@@ -56,6 +57,10 @@ class LocalDatabase {
     }
 
     save() {
+        if (this.simulationMode) {
+            console.warn('🧪 SIMULATION: Local DB save skipped (Read-only mode).');
+            return;
+        }
         try {
             fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2));
             console.log('💾 Local DB saved successfully.');
@@ -69,7 +74,10 @@ class LocalDatabase {
     }
 
     // Identify the operation type and table
-    async query(text, params = []) {
+    async query(text, params = [], options = {}) {
+        if (options.simulateVercel !== undefined) {
+            this.simulationMode = options.simulateVercel;
+        }
         console.log(`📝 LocalDB Op: ${text.substring(0, 50)}...`, params);
         const upperText = text.trim().toUpperCase();
 
